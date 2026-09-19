@@ -1,0 +1,300 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-body: var(--font-body);
+  --font-heading: var(--font-heading);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Strix system tokens: dark, quiet, and intentionally high-contrast. */
+  --background: #070707;
+  --foreground: #f5f5f5;
+  --card: #101010;
+  --card-foreground: #f5f5f5;
+  --popover: #151515;
+  --popover-foreground: #f5f5f5;
+  --primary: #d7ff4f;
+  --primary-foreground: #070707;
+  --secondary: #151515;
+  --secondary-foreground: #f5f5f5;
+  --muted: #101010;
+  --muted-foreground: #a1a1a1;
+  --accent: #1a1a1a;
+  --accent-foreground: #f5f5f5;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: rgba(245, 245, 245, 0.1);
+  --input: rgba(245, 245, 245, 0.12);
+  --ring: #d7ff4f;
+  --chart-1: #d7ff4f;
+  --chart-2: #4ade80;
+  --chart-3: #60a5fa;
+  --chart-4: #facc15;
+  --chart-5: #f87171;
+  --radius: 0.5rem;
+  --sidebar: #0b0b0b;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #d7ff4f;
+  --sidebar-primary-foreground: #070707;
+  --sidebar-accent: #151515;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: rgba(245, 245, 245, 0.1);
+  --sidebar-ring: #d7ff4f;
+  --page-background:
+    radial-gradient(circle at 78% 0%, rgba(215, 255, 79, 0.07), transparent 22%),
+    linear-gradient(180deg, #070707 0%, #0b0b0b 52%, #070707 100%);
+  --page-overlay:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  --surface: #101010;
+  --surface-strong: #151515;
+  --border-subtle: rgba(245, 245, 245, 0.1);
+  --text-primary: #f5f5f5;
+  --text-secondary: #a1a1a1;
+  --text-muted: #6f6f6f;
+  --space-section: clamp(4rem, 9vw, 10rem);
+  --container-width: 80rem;
+}
+
+html.dark {
+  --background: #070707;
+  --foreground: #f5f5f5;
+  --card: #101010;
+  --card-foreground: #f5f5f5;
+  --popover: #151515;
+  --popover-foreground: #f5f5f5;
+  --secondary: #151515;
+  --secondary-foreground: #f5f5f5;
+  --muted: #101010;
+  --muted-foreground: #a1a1a1;
+  --accent: #1a1a1a;
+  --accent-foreground: #f5f5f5;
+  --border: rgba(245, 245, 245, 0.1);
+  --input: rgba(245, 245, 245, 0.12);
+  --sidebar: #0b0b0b;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-accent: #151515;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: rgba(245, 245, 245, 0.1);
+  --page-background:
+    radial-gradient(circle at 78% 0%, rgba(215, 255, 79, 0.07), transparent 22%),
+    linear-gradient(180deg, #070707 0%, #0b0b0b 52%, #070707 100%);
+  --page-overlay:
+    linear-gradient(rgba(245, 245, 245, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 245, 245, 0.018) 1px, transparent 1px);
+  --surface: #101010;
+  --surface-strong: #151515;
+  --border-subtle: rgba(245, 245, 245, 0.1);
+}
+
+html {
+  background: var(--background);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--page-background);
+  color: var(--foreground);
+  font-family: var(--font-body), var(--font-geist-sans), sans-serif;
+  font-feature-settings: "cv02", "cv03", "ss01", "ss02";
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.8;
+  background-image: var(--page-overlay);
+  background-size: 84px 84px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 92%);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+  --background: oklch(0.985 0.01 95);
+  --foreground: oklch(0.22 0.02 95);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.02 95);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.02 95);
+  --primary: oklch(0.68 0.12 75);
+  --primary-foreground: oklch(0.985 0.01 95);
+  --secondary: oklch(0.95 0.01 95);
+  --secondary-foreground: oklch(0.22 0.02 95);
+  --muted: oklch(0.97 0.01 95);
+  --muted-foreground: oklch(0.44 0.02 95);
+  --accent: oklch(0.95 0.02 95);
+  --accent-foreground: oklch(0.22 0.02 95);
+  --border: oklch(0.92 0.01 95);
+  --input: oklch(0.92 0.01 95);
+  --ring: oklch(0.68 0.12 75);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.22 0.02 95);
+  --sidebar-primary: oklch(0.68 0.12 75);
+  --sidebar-primary-foreground: oklch(0.985 0.01 95);
+  --sidebar-accent: oklch(0.95 0.01 95);
+  --sidebar-accent-foreground: oklch(0.22 0.02 95);
+  --sidebar-border: oklch(0.92 0.01 95);
+  --sidebar-ring: oklch(0.68 0.12 75);
+  --page-background:
+    radial-gradient(circle at top, rgba(216, 158, 88, 0.08), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(122, 168, 112, 0.06), transparent 22%),
+    linear-gradient(180deg, #fcfbf7 0%, #f4efe6 52%, #ede7db 100%);
+  --page-overlay:
+    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  --surface: rgba(255, 255, 255, 0.76);
+  --surface-strong: rgba(255, 255, 255, 0.9);
+  --border-subtle: rgba(15, 23, 42, 0.1);
+}
+
+::selection {
+  background: rgba(216, 158, 88, 0.35);
+  color: inherit;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .strix-container {
+    width: min(100% - 2rem, var(--container-width));
+    margin-inline: auto;
+  }
+
+  .section-space {
+    padding-block: var(--space-section);
+  }
+
+  .noise {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Normalize rounded utilities: force a single rounded size across the site
+   This keeps design consistent when many custom rounded-* classes were used. */
+:root {
+  --rounded-default: 0.75rem;
+}
+
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+.rounded-\[28px\],
+.rounded-\[32px\],
+.rounded-\[36px\],
+.rounded-\[24px\],
+.rounded-\[26px\],
+.rounded-\[20px\] {
+  border-radius: var(--rounded-default) !important;
+}
+
+html:not(.dark) [class*="text-white"] {
+  color: var(--foreground) !important;
+}
+
+html:not(.dark) [class*="text-white/"] {
+  color: var(--muted-foreground) !important;
+}
+
+html:not(.dark) [class*="bg-white/"] {
+  background-color: var(--surface) !important;
+}
+
+html:not(.dark) [class*="bg-black/"] {
+  background-color: var(--surface-strong) !important;
+}
+
+html:not(.dark) [class*="border-white/"] {
+  border-color: var(--border-subtle) !important;
+}
+
+html:not(.dark) [class*="shadow-emerald-500/"] {
+  box-shadow: 0 24px 60px rgba(16, 185, 129, 0.12) !important;
+}
