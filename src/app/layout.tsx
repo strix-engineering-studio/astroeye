@@ -10,8 +10,8 @@ import {
 import { organizationSchema, siteConfig, websiteSchema } from "@/lib/seo";
 
 import "./globals.css";
-import { StrixCursor } from "../components/strix-cursor";
-import { ThemeProvider } from "next-themes";
+import { AstroeyeCursor } from "../components/strix-cursor";
+import AppProviders from "@/providers/AppProviders";
 import { cn } from "@/lib/utils";
 
 const playfairDisplayHeading = Playfair_Display({
@@ -52,20 +52,19 @@ const monoFont = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default:
-      "Strix Engineering Studio | Architecture-First Product Engineering",
-    template: "%s | Strix Engineering Studio",
+    default: "Astroeye | Architecture-First Product Engineering",
+    template: "%s | Astroeye",
   },
   description: siteConfig.description,
   keywords: siteConfig.defaultKeywords,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Strix",
+    title: "Astroeye",
     statusBarStyle: "black-translucent",
   },
   openGraph: {
-    title: "Strix Engineering Studio | Architecture-First Product Engineering",
+    title: "Astroeye | Architecture-First Product Engineering",
     description: siteConfig.description,
     url: "/",
     siteName: siteConfig.name,
@@ -73,7 +72,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Strix Engineering Studio",
+    title: "Astroeye",
     description: siteConfig.description,
   },
 
@@ -119,16 +118,14 @@ export default function RootLayout({
         playfairDisplayHeading.variable,
       )}
     >
-      <body className="relative isolate min-h-screen overflow-x-hidden text-text-primary bg-background">
-        <ThemeProvider>
-          {/* <PwaRegister /> */}
+      <body
+        suppressHydrationWarning
+        className="relative isolate min-h-screen overflow-x-hidden text-text-primary bg-background"
+      >
+        {/* AppProviders sanitizes script tags and provides global context */}
+        <AppProviders>{children}</AppProviders>
 
-          <div className="relative flex min-h-screen flex-col">
-            <div className="relative flex-1">{children}</div>
-          </div>
-
-          {/* <CommandMenu /> */}
-        </ThemeProvider>
+        <AstroeyeCursor />
       </body>
     </html>
   );

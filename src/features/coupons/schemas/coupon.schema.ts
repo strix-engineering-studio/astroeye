@@ -7,7 +7,6 @@ export const couponSchema = z.object({
   discountType: z.enum(['percentage', 'fixed']),
   discountValue: z.number().positive(),
   minimumOrderAmount: z.number().optional(),
-  maximumDiscount: z.number().optional(),
   isActive: z.boolean().default(true),
   expiresAt: z.date().nullable(),
 });

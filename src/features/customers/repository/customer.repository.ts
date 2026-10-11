@@ -1,46 +1,71 @@
-import { Prisma } from '@prisma/client';
+import { db } from '@/lib/firebase.config';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  DocumentReference,
+  QueryDocumentSnapshot
+} from 'firebase/firestore';
 
 export class CustomerRepository {
-  private prisma: Prisma;
+  private customersCollection: DocumentReference;
 
-  constructor(prisma: Prisma) {
-    this.prisma = prisma;
+  constructor() {
+    this.customersCollection = collection(db, 'customers');
   }
 
-  async createCustomer(data: any): Promise<any> {
-    return await this.prisma.customer.create({ data });
+  async createCustomer(data: any): Promise<DocumentReference> {
+    return addDoc(this.customersCollection, data);
   }
 
-  async findCustomerById(id: string): Promise<any | null> {
-    return await this.prisma.customer.findUnique({ where: { id } });
+  async findCustomerById(id: string): Promise<QueryDocumentSnapshot | null> {
+    const docRef = doc(db, 'customers', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap : null;
   }
 
   async findAllCustomers(): Promise<any[]> {
-    return await this.prisma.customer.findMany();
+    const q = query(this.customersCollection, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
   async updateCustomer(id: string, data: any): Promise<boolean> {
-    const result = await this.prisma.customer.update({
-      where: { id },
-      data,
-    });
-    return !!result;
+    const docRef = doc(db, 'customers', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await updateDoc(docRef, data);
+    return true;
   }
 
   async deleteCustomer(id: string): Promise<boolean> {
-    const result = await this.prisma.customer.delete({ where: { id } });
-    return !!result;
+    const docRef = doc(db, 'customers', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await deleteDoc(docRef);
+    return true;
   }
 
-  async findCustomersByEmail(email: string): Promise<any | null> {
-    return await this.prisma.customer.findUnique({
-      where: { email },
-    });
+  async findCustomersByEmail(email: string): Promise<QueryDocumentSnapshot | null> {
+    const q = query(this.customersCollection, where('email', '==', email));
+    const snapshot = await getDocs(q);
+    return snapshot.size > 0 ? snapshot.docs[0] : null;
   }
 
   async findCustomersByStatus(status: string): Promise<any[]> {
-    return await this.prisma.customer.findMany({
-      where: { status },
-    });
+    const q = query(this.customersCollection, where('status', '==', status));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 }

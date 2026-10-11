@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
+// TanStack Table v9+ imports - use create* functions instead of get* functions
 import {
   ColumnFiltersState,
   PaginationState,
   RowSelectionState,
   SortingState,
-  VisibilityState,
   flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
+  createCoreRowModel,
 } from '@tanstack/react-table';
 
 import { AlertCircle, Database, RefreshCw } from 'lucide-react';
@@ -141,7 +137,7 @@ export function DataTable<TData, TValue>({
     pageSize: pagination?.pageSize ?? 10,
   });
 
-  const [internalVisibility, setInternalVisibility] = useState<VisibilityState>({});
+  const [internalVisibility, setInternalVisibility] = useState<Record<string, boolean>>({});
 
   const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
 
@@ -188,17 +184,22 @@ export function DataTable<TData, TValue>({
    * -------------------------------------------------------
    */
 
-  const table = useReactTable({
+  const table = ReactTable({
     data,
     columns,
 
-    getCoreRowModel: getCoreRowModel(),
+    coreRowModel: createCoreRowModel(),
 
-    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    sortedRowModel: manualSorting ? [] : sortingState,
 
-    getFilteredRowModel: manualFiltering ? undefined : getFilteredRowModel(),
+    filteredRowModel: filterValues,
 
-    getPaginationRowModel: manualPagination ? undefined : getPaginationRowModel(),
+    paginationRowModel: (pageIndex, pageSize) => ({
+      first: pageIndex === 0 ? undefined : pageIndex - 1,
+      last: pageIndex + 1,
+      previous: pageIndex === 0 ? undefined : pageIndex - 1,
+      next: pageIndex + 1 >= pageCount ? undefined : pageIndex + 1,
+    }),
 
     manualSorting,
     manualFiltering,

@@ -6,7 +6,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { Toaster } from "sonner";
 import React, { useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NextTopLoader from "nextjs-toploader";
+// import NextTopLoader from "nextjs-toploader"; // Disabled due to script tag injection issue
 
 export default function AppProviders({
   children,
@@ -64,7 +64,7 @@ export default function AppProviders({
       <TooltipProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <NextTopLoader color="#E14D3D" showSpinner={false} />
+
             {safeChildren}
             <Toaster position="top-center" richColors />
           </AuthProvider>

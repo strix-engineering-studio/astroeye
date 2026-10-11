@@ -1,46 +1,71 @@
-import { Prisma } from '@prisma/client';
+import { db } from '@/lib/firebase.config';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  DocumentReference,
+  QueryDocumentSnapshot
+} from 'firebase/firestore';
 
 export class ContentRepository {
-  private prisma: Prisma;
+  private contentsCollection: DocumentReference;
 
-  constructor(prisma: Prisma) {
-    this.prisma = prisma;
+  constructor() {
+    this.contentsCollection = collection(db, 'contents');
   }
 
-  async createContent(data: any): Promise<any> {
-    return await this.prisma.content.create({ data });
+  async createContent(data: any): Promise<DocumentReference> {
+    return addDoc(this.contentsCollection, data);
   }
 
-  async findContentById(id: string): Promise<any | null> {
-    return await this.prisma.content.findUnique({ where: { id } });
+  async findContentById(id: string): Promise<QueryDocumentSnapshot | null> {
+    const docRef = doc(db, 'contents', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap : null;
   }
 
   async findAllContents(): Promise<any[]> {
-    return await this.prisma.content.findMany();
+    const q = query(this.contentsCollection, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
   async updateContent(id: string, data: any): Promise<boolean> {
-    const result = await this.prisma.content.update({
-      where: { id },
-      data,
-    });
-    return !!result;
+    const docRef = doc(db, 'contents', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await updateDoc(docRef, data);
+    return true;
   }
 
   async deleteContent(id: string): Promise<boolean> {
-    const result = await this.prisma.content.delete({ where: { id } });
-    return !!result;
+    const docRef = doc(db, 'contents', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await deleteDoc(docRef);
+    return true;
   }
 
   async findContentsByType(type: string): Promise<any[]> {
-    return await this.prisma.content.findMany({
-      where: { type },
-    });
+    const q = query(this.contentsCollection, where('type', '==', type));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
-  async findContentBySlug(slug: string): Promise<any | null> {
-    return await this.prisma.content.findUnique({
-      where: { slug },
-    });
+  async findContentBySlug(slug: string): Promise<QueryDocumentSnapshot | null> {
+    const q = query(this.contentsCollection, where('slug', '==', slug));
+    const snapshot = await getDocs(q);
+    return snapshot.size > 0 ? snapshot.docs[0] : null;
   }
 }

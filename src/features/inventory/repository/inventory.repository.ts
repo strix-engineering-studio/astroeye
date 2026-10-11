@@ -1,54 +1,90 @@
-import { Prisma } from '@prisma/client';
+import { db } from '@/lib/firebase.config';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  DocumentReference,
+  QueryDocumentSnapshot
+} from 'firebase/firestore';
 
 export class InventoryRepository {
-  private prisma: Prisma;
+  private inventoriesCollection: DocumentReference;
 
-  constructor(prisma: Prisma) {
-    this.prisma = prisma;
+  constructor() {
+    this.inventoriesCollection = collection(db, 'inventories');
   }
 
-  async createInventory(data: any): Promise<any> {
-    return await this.prisma.inventory.create({ data });
+  async createInventory(data: any): Promise<DocumentReference> {
+    return addDoc(this.inventoriesCollection, data);
   }
 
-  async findInventoryById(id: string): Promise<any | null> {
-    return await this.prisma.inventory.findUnique({ where: { id } });
+  async findInventoryById(id: string): Promise<QueryDocumentSnapshot | null> {
+    const docRef = doc(db, 'inventories', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap : null;
   }
 
   async findAllInventories(): Promise<any[]> {
-    return await this.prisma.inventory.findMany();
+    const q = query(this.inventoriesCollection, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
   async updateInventory(id: string, data: any): Promise<boolean> {
-    const result = await this.prisma.inventory.update({
-      where: { id },
-      data,
-    });
-    return !!result;
+    const docRef = doc(db, 'inventories', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await updateDoc(docRef, data);
+    return true;
   }
 
   async deleteInventory(id: string): Promise<boolean> {
-    const result = await this.prisma.inventory.delete({ where: { id } });
-    return !!result;
+    const docRef = doc(db, 'inventories', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await deleteDoc(docRef);
+    return true;
   }
 
   async findInventoriesByProductId(productId: string): Promise<any[]> {
-    return await this.prisma.inventory.findMany({
-      where: { productId },
-    });
+    const q = query(this.inventoriesCollection, where('productId', '==', productId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
   async updateInventoryQuantity(productId: string, quantityChange: number): Promise<boolean> {
-    const result = await this.prisma.inventory.update({
-      where: { productId },
-      data: { quantity: { increment: quantityChange } },
+    const q = query(this.inventoriesCollection, where('productId', '==', productId));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) return false;
+    
+    const docRef = doc(db, 'inventories', snapshot.docs[0].id);
+    const inventoryData = snapshot.docs[0].data();
+    
+    let newQuantity = inventoryData.quantity + quantityChange;
+    
+    await updateDoc(docRef, { 
+      quantity: newQuantity,
+      updatedAt: new Date()
     });
-    return !!result;
+    
+    return true;
   }
 
   async findLowStockInventories(threshold: number): Promise<any[]> {
-    return await this.prisma.inventory.findMany({
-      where: { quantity: lt(threshold) },
-    });
+    const q = query(this.inventoriesCollection, where('quantity', '<=', threshold));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 }

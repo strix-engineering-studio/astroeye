@@ -1,5 +1,5 @@
-import AdminLayout from "@/components/layouts/AdminLayout";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import AdminLayout from "@/src/components/layout/AdminLayout";
 export default function PrivateLayout({
   children,
 }: {

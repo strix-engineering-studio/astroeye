@@ -7,6 +7,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AuthLayout from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,12 +55,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <AuthLayout>
       <Card className="w-full min-w-sm">
         <CardHeader className="space-y-4 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border">
             <Image
-              src="/hugged-logo-512x512.png"
+              src="/astroeye-logo-512x512.png"
               alt="Logo"
               width={50}
               height={50}
@@ -145,13 +146,13 @@ export default function LoginPage() {
                   rel="noopener noreferrer"
                   className="hover:text-foreground font-semibold transition-colors"
                 >
-                  Strix Engineering Studio
+                  Astroeye
                 </Link>
               </p>
             </div>
           </CardContent>
         </form>
       </Card>
-    </div>
+    </AuthLayout>
   );
 }

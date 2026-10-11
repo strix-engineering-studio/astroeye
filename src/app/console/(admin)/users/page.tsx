@@ -1,7 +1,7 @@
 import UsersPage from "@/features/users/pages/UsersPage";
 
 export const metadata = {
-  title: "HUGGED - Users",
+  title: "Astroeye - Users",
   description: "Admin dashboard for managing the application",
 };
 

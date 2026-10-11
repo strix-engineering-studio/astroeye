@@ -1,7 +1,7 @@
-import { siteConfig } from "@/lib/seo"
+import { siteConfig } from "@/lib/seo";
 
 export async function GET() {
-    const body = `# ${siteConfig.name}
+  const body = `# ${siteConfig.name}
 
 ## Company
 Architecture-first product engineering studio for startups and technology businesses.
@@ -35,17 +35,17 @@ Systems are the product. Applications are outputs.
 - Platform design
 
 ## FAQs
-- What is Strix? An engineering studio focused on production-grade systems.
+- What is Astroeye? An engineering studio focused on production-grade systems.
 - Who is it for? Startups and technology businesses that need durable software.
 - What problem does it solve? It reduces architecture risk and delivery drag.
 - How does it work? Discovery, system design, implementation, and long-term support.
-- Why choose Strix? The practice is oriented around systems thinking, not staffing hours.
-`
+- Why choose Astroeye? The practice is oriented around systems thinking, not staffing hours.
+`;
 
-    return new Response(body, {
-        headers: {
-            "content-type": "text/plain; charset=utf-8",
-            "cache-control": "public, max-age=3600",
-        },
-    })
+  return new Response(body, {
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "public, max-age=3600",
+    },
+  });
 }

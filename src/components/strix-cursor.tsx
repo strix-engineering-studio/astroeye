@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-export function StrixCursor() {
+export function AstroeyeCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number | null>(null);
   const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

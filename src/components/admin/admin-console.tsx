@@ -371,7 +371,7 @@ export function AdminConsole({
 
   async function signOut() {
     await fetch("/api/admin/logout", { method: "POST" });
-    window.location.href = "/admin/login";
+    window.location.href = "/console/login";
   }
 
   return (

@@ -1,46 +1,75 @@
-import { Prisma } from '@prisma/client';
+import { db } from '@/lib/firebase.config';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  DocumentReference,
+  QueryDocumentSnapshot
+} from 'firebase/firestore';
 
 export class CouponRepository {
-  private prisma: Prisma;
+  private couponsCollection: DocumentReference;
 
-  constructor(prisma: Prisma) {
-    this.prisma = prisma;
+  constructor() {
+    this.couponsCollection = collection(db, 'coupons');
   }
 
-  async createCoupon(data: any): Promise<any> {
-    return await this.prisma.coupon.create({ data });
+  async createCoupon(data: any): Promise<DocumentReference> {
+    return addDoc(this.couponsCollection, data);
   }
 
-  async findCouponById(id: string): Promise<any | null> {
-    return await this.prisma.coupon.findUnique({ where: { id } });
+  async findCouponById(id: string): Promise<QueryDocumentSnapshot | null> {
+    const docRef = doc(db, 'coupons', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap : null;
   }
 
   async findAllCoupons(): Promise<any[]> {
-    return await this.prisma.coupon.findMany();
+    const q = query(this.couponsCollection, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
   async updateCoupon(id: string, data: any): Promise<boolean> {
-    const result = await this.prisma.coupon.update({
-      where: { id },
-      data,
-    });
-    return !!result;
+    const docRef = doc(db, 'coupons', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await updateDoc(docRef, data);
+    return true;
   }
 
   async deleteCoupon(id: string): Promise<boolean> {
-    const result = await this.prisma.coupon.delete({ where: { id } });
-    return !!result;
+    const docRef = doc(db, 'coupons', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await deleteDoc(docRef);
+    return true;
   }
 
-  async findCouponsByCode(code: string): Promise<any | null> {
-    return await this.prisma.coupon.findUnique({
-      where: { code },
-    });
+  async findCouponsByCode(code: string): Promise<QueryDocumentSnapshot | null> {
+    const q = query(this.couponsCollection, where('code', '==', code));
+    const snapshot = await getDocs(q);
+    return snapshot.size > 0 ? snapshot.docs[0] : null;
   }
 
   async findActiveCoupons(): Promise<any[]> {
-    return await this.prisma.coupon.findMany({
-      where: { isActive: true, expiresAt: null },
-    });
+    const q = query(
+      this.couponsCollection, 
+      where('isActive', '==', true),
+      orderBy('expiresAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 }

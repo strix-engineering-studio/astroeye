@@ -1,3 +1,5 @@
+import AuthLayout from "@/src/components/layout/AuthLayout";
+
 export default function PublicLayout({
   children,
 }: {

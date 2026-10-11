@@ -1,46 +1,80 @@
-import { Prisma } from '@prisma/client';
+import { db } from '@/lib/firebase.config';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  DocumentReference,
+  QueryDocumentSnapshot,
+  QueryDocumentSnapshot as DocumentSnapshot
+} from 'firebase/firestore';
 
 export class AddressRepository {
-  private prisma: Prisma;
+  private addressesCollection: DocumentReference;
 
-  constructor(prisma: Prisma) {
-    this.prisma = prisma;
+  constructor() {
+    this.addressesCollection = collection(db, 'addresses');
   }
 
-  async createAddress(data: any): Promise<any> {
-    return await this.prisma.address.create({ data });
+  async createAddress(data: any): Promise<DocumentReference> {
+    return addDoc(this.addressesCollection, data);
   }
 
-  async findAddressById(id: string): Promise<any | null> {
-    return await this.prisma.address.findUnique({ where: { id } });
+  async findAddressById(id: string): Promise<DocumentSnapshot | null> {
+    const docRef = doc(db, 'addresses', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap : null;
   }
 
   async findAllAddresses(): Promise<any[]> {
-    return await this.prisma.address.findMany();
+    const q = query(this.addressesCollection, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
   async updateAddress(id: string, data: any): Promise<boolean> {
-    const result = await this.prisma.address.update({
-      where: { id },
-      data,
-    });
-    return !!result;
+    const docRef = doc(db, 'addresses', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await updateDoc(docRef, data);
+    return true;
   }
 
   async deleteAddress(id: string): Promise<boolean> {
-    const result = await this.prisma.address.delete({ where: { id } });
-    return !!result;
+    const docRef = doc(db, 'addresses', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await deleteDoc(docRef);
+    return true;
   }
 
   async findAddressesByCustomerId(customerId: string): Promise<any[]> {
-    return await this.prisma.address.findMany({
-      where: { customerId },
-    });
+    const q = query(
+      this.addressesCollection, 
+      where('customerId', '==', customerId),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
-  async findDefaultAddress(userId: string): Promise<any | null> {
-    return await this.prisma.address.findFirst({
-      where: { userId, isDefault: true },
-    });
+  async findDefaultAddress(userId: string): Promise<DocumentSnapshot | null> {
+    const q = query(
+      this.addressesCollection, 
+      where('userId', '==', userId),
+      where('isDefault', '==', true)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.size > 0 ? snapshot.docs[0] : null;
   }
 }

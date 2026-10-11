@@ -388,8 +388,8 @@ export async function POST(request: Request) {
         currency: "INR",
         resourceId,
         keyId: RAZORPAY_KEY_ID,
-        name: "Hugged",
-        description: resource.title ?? "Hugged Resource",
+        name: "Astroeye",
+        description: resource.title ?? "Astroeye Resource",
       };
       await adminDb.collection("resource_payments").doc(razorpayOrder.id).set({
         id: razorpayOrder.id,
@@ -645,8 +645,8 @@ export async function POST(request: Request) {
       currency: "INR",
       webinarId,
       keyId: RAZORPAY_KEY_ID,
-      name: "Hugged",
-      description: webinar.title ?? "Hugged Webinar",
+      name: "Astroeye",
+      description: webinar.title ?? "Astroeye Webinar",
     };
     await adminDb.collection("webinar_payments").doc(razorpayOrder.id).set({
       id: razorpayOrder.id,

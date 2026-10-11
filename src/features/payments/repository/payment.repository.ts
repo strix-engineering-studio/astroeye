@@ -1,46 +1,71 @@
-import { Prisma } from '@prisma/client';
+import { db } from '@/lib/firebase.config';
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  DocumentReference,
+  QueryDocumentSnapshot
+} from 'firebase/firestore';
 
 export class PaymentRepository {
-  private prisma: Prisma;
+  private paymentsCollection: DocumentReference;
 
-  constructor(prisma: Prisma) {
-    this.prisma = prisma;
+  constructor() {
+    this.paymentsCollection = collection(db, 'payments');
   }
 
-  async createPayment(data: any): Promise<any> {
-    return await this.prisma.payment.create({ data });
+  async createPayment(data: any): Promise<DocumentReference> {
+    return addDoc(this.paymentsCollection, data);
   }
 
-  async findPaymentById(id: string): Promise<any | null> {
-    return await this.prisma.payment.findUnique({ where: { id } });
+  async findPaymentById(id: string): Promise<QueryDocumentSnapshot | null> {
+    const docRef = doc(db, 'payments', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap : null;
   }
 
   async findAllPayments(): Promise<any[]> {
-    return await this.prisma.payment.findMany();
+    const q = query(this.paymentsCollection, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
   async updatePayment(id: string, data: any): Promise<boolean> {
-    const result = await this.prisma.payment.update({
-      where: { id },
-      data,
-    });
-    return !!result;
+    const docRef = doc(db, 'payments', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await updateDoc(docRef, data);
+    return true;
   }
 
   async deletePayment(id: string): Promise<boolean> {
-    const result = await this.prisma.payment.delete({ where: { id } });
-    return !!result;
+    const docRef = doc(db, 'payments', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) return false;
+    
+    await deleteDoc(docRef);
+    return true;
   }
 
   async findPaymentsByOrder(orderId: string): Promise<any[]> {
-    return await this.prisma.payment.findMany({
-      where: { orderId },
-    });
+    const q = query(this.paymentsCollection, where('orderId', '==', orderId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
-  async findPaymentByTransactionId(transactionId: string): Promise<any | null> {
-    return await this.prisma.payment.findUnique({
-      where: { transactionId },
-    });
+  async findPaymentByTransactionId(transactionId: string): Promise<QueryDocumentSnapshot | null> {
+    const q = query(this.paymentsCollection, where('transactionId', '==', transactionId));
+    const snapshot = await getDocs(q);
+    return snapshot.size > 0 ? snapshot.docs[0] : null;
   }
 }

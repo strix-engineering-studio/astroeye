@@ -10,7 +10,7 @@ const loggerOptions: LoggerOptions = {
   level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
 
   base: {
-    service: process.env.LOG_SERVICE_NAME || "hugged-admin-console",
+    service: process.env.LOG_SERVICE_NAME || "astroeye-admin-console",
 
     environment: APP_ENV || "development",
   },

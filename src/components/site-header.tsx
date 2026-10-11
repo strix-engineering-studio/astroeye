@@ -96,7 +96,7 @@ export function SiteHeader() {
               src="/strix.svg"
               width={36}
               height={36}
-              alt="Strix Engineering Studio"
+              alt="Astroeye"
               priority
             />
 
@@ -173,7 +173,7 @@ export function SiteHeader() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Strix on ${social.label}`}
+                  aria-label={`Astroeye on ${social.label}`}
                   className="
                     group
                     relative
@@ -296,7 +296,7 @@ export function SiteHeader() {
                     text-foreground/35
                   "
                 >
-                  Connect / Strix
+                  Connect / Astroeye
                 </span>
 
                 <span

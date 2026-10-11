@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-sans: var(--font-body);
+  --font-sans: var(--font-body);
   --font-display: var(--font-display);
   --font-mono: var(--font-mono);
 
@@ -53,7 +53,7 @@
 }
 
 :root {
-  /* Strix system tokens: dark, quiet, and intentionally high-contrast. */
+  /* Astroeye system tokens: dark, quiet, and intentionally high-contrast. */
   --background: #070707;
   --foreground: #f5f5f5;
   --card: #101010;
@@ -87,7 +87,11 @@
   --sidebar-border: rgba(245, 245, 245, 0.1);
   --sidebar-ring: #d7ff4f;
   --page-background:
-    radial-gradient(circle at 78% 0%, rgba(215, 255, 79, 0.07), transparent 22%),
+    radial-gradient(
+      circle at 78% 0%,
+      rgba(215, 255, 79, 0.07),
+      transparent 22%
+    ),
     linear-gradient(180deg, #070707 0%, #0b0b0b 52%, #070707 100%);
   --page-overlay:
     linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
@@ -123,7 +127,11 @@ html.dark {
   --sidebar-accent-foreground: #f5f5f5;
   --sidebar-border: rgba(245, 245, 245, 0.1);
   --page-background:
-    radial-gradient(circle at 78% 0%, rgba(215, 255, 79, 0.07), transparent 22%),
+    radial-gradient(
+      circle at 78% 0%,
+      rgba(215, 255, 79, 0.07),
+      transparent 22%
+    ),
     linear-gradient(180deg, #070707 0%, #0b0b0b 52%, #070707 100%);
   --page-overlay:
     linear-gradient(rgba(245, 245, 245, 0.018) 1px, transparent 1px),
@@ -191,7 +199,11 @@ html:not(.dark) {
   --sidebar-ring: oklch(0.68 0.12 75);
   --page-background:
     radial-gradient(circle at top, rgba(216, 158, 88, 0.08), transparent 28%),
-    radial-gradient(circle at 80% 10%, rgba(122, 168, 112, 0.06), transparent 22%),
+    radial-gradient(
+      circle at 80% 10%,
+      rgba(122, 168, 112, 0.06),
+      transparent 22%
+    ),
     linear-gradient(180deg, #fcfbf7 0%, #f4efe6 52%, #ede7db 100%);
   --page-overlay:
     linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),

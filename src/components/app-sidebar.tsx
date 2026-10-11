@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import packageJson from '../../package.json';
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import packageJson from "../../package.json";
 import {
   LayoutDashboardIcon,
   UsersIcon,
@@ -20,9 +20,9 @@ import {
   LogsIcon,
   Menu,
   Map,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { NavMain } from '@/components/nav-main';
+import { NavMain } from "@/components/nav-main";
 import {
   Sidebar,
   SidebarContent,
@@ -31,75 +31,75 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { Separator } from './ui/separator';
+} from "@/components/ui/sidebar";
+import { Separator } from "./ui/separator";
 
 const data = {
   user: {
-    name: 'Admin',
-    email: 'admin@hugged.app',
-    avatar: '/avatars/admin.png',
+    name: "Admin",
+    email: "admin@astroeye.app",
+    avatar: "/avatars/admin.png",
   },
 
   navMain: [
     {
-      title: 'Dashboard',
-      url: '/',
+      title: "Dashboard",
+      url: "/",
       icon: LayoutDashboardIcon,
     },
     {
-      title: 'Users',
-      url: '/users',
+      title: "Users",
+      url: "/users",
       icon: UsersIcon,
     },
     {
-      title: 'Communities',
-      url: '/communities',
+      title: "Communities",
+      url: "/communities",
       icon: UsersRoundIcon,
     },
     {
-      title: 'Meets',
-      url: '/meets',
+      title: "Meets",
+      url: "/meets",
       icon: Map,
     },
     {
-      title: 'Feed',
-      url: '/feed',
+      title: "Feed",
+      url: "/feed",
       icon: RssIcon,
     },
     {
-      title: 'Webinars',
-      url: '/webinars',
+      title: "Webinars",
+      url: "/webinars",
       icon: VideoIcon,
     },
     {
-      title: 'Resources',
-      url: '/resources',
+      title: "Resources",
+      url: "/resources",
       icon: LibraryBigIcon,
     },
     {
-      title: 'Expert Requests',
-      url: '/expert-requests',
+      title: "Expert Requests",
+      url: "/expert-requests",
       icon: Crown,
     },
     {
-      title: 'Moderation',
-      url: '/moderation',
+      title: "Moderation",
+      url: "/moderation",
       icon: ShieldCheckIcon,
     },
     {
-      title: 'Notifications',
-      url: '/notifications',
+      title: "Notifications",
+      url: "/notifications",
       icon: BellIcon,
     },
     {
-      title: 'Team',
-      url: '/admins',
+      title: "Team",
+      url: "/admins",
       icon: CrownIcon,
     },
     {
-      title: 'Settings',
-      url: '/settings',
+      title: "Settings",
+      url: "/settings",
       icon: Settings2Icon,
     },
   ],
@@ -111,11 +111,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="data-[slot=sidebar-menu-button]:p-1.5">
+            <SidebarMenuButton
+              size="lg"
+              className="data-[slot=sidebar-menu-button]:p-1.5"
+            >
               <Link href="/" className="flex items-center gap-3">
                 <Image
-                  src="/hugged-logo-512x512.png"
-                  alt="HUGGED"
+                  src="/astroeye-logo-512x512.png"
+                  alt="Astroeye"
                   width={40}
                   height={40}
                   priority
@@ -123,7 +126,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 />
 
                 <div className="flex flex-col leading-none">
-                  <span className="text-base font-semibold">HUGGED</span>
+                  <span className="text-base font-semibold">Astroeye</span>
                   <span className="text-muted-foreground text-xs">
                     Admin Console v{packageJson.version}
                   </span>
@@ -141,14 +144,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <Separator />
       <SidebarFooter>
         <p className="text-muted-foreground text-xs">
-          Built by{' '}
+          Built by{" "}
           <Link
             href="https://strix.website"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-primary font-medium"
           >
-            Strix Engineering Studio
+            Astroeye
           </Link>
         </p>
       </SidebarFooter>

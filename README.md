@@ -1,6 +1,6 @@
-# Strix
+# Astroeye
 
-Strix Product Engineering Studio is a premium engineering-led company site focused on discovery, product systems, backend architecture, mobile experiences, AI-enabled workflows, and long-term technical partnership.
+Astroeye Product Engineering Studio is a premium engineering-led company site focused on discovery, product systems, backend architecture, mobile experiences, AI-enabled workflows, and long-term technical partnership.
 
 ## Getting Started
 

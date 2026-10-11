@@ -1,7 +1,7 @@
 import ResourcesPage from "@/features/resources/pages/ResourcesPage";
 
 export const metadata = {
-  title: "HUGGED - Resources",
+  title: "Astroeye - Resources",
   description: "Admin dashboard for managing the application",
 };
 
