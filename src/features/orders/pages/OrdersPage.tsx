@@ -21,7 +21,6 @@ import { DataTableFilter } from "@/components/tables/FilterDropdown";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import {
   DropdownMenu,
