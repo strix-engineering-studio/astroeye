@@ -191,7 +191,6 @@ function pairsToText(pairs: { label: string; value: string }[]) {
   return pairs.map((pair) => `${pair.label}|${pair.value}`).join("\n");
 }
 
-
 export function AdminConsole({
   initialLandingPages,
   initialClients,
@@ -396,7 +395,6 @@ export function AdminConsole({
             </div>
             <div className="flex flex-wrap gap-3">
               <Button
-                asChild
                 variant="outline"
                 className="border-white/12 bg-white/5 text-white hover:bg-white/10"
               >
@@ -981,7 +979,6 @@ export function AdminConsole({
                     </div>
                     <div className="mt-5 flex flex-wrap gap-3">
                       <Button
-                        asChild
                         variant="outline"
                         className="border-white/12 bg-white/5 text-white hover:bg-white/10"
                       >

@@ -1,18 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Instrument_Serif,
+  Noto_Sans,
+  Playfair_Display,
+} from "next/font/google";
 
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-
-import { CommandMenu } from "@/components/shared/command-menu";
-import { PwaRegister } from "@/components/shared/pwa-register";
-import { ThemeProvider } from "@/components/shared/theme-provider";
-
-import { JsonLd } from "@/components/seo/json-ld";
 import { organizationSchema, siteConfig, websiteSchema } from "@/lib/seo";
 
 import "./globals.css";
 import { StrixCursor } from "../components/strix-cursor";
+import { ThemeProvider } from "next-themes";
+import { cn } from "@/lib/utils";
+
+const playfairDisplayHeading = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
+
+const notoSans = Noto_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 /* -------------------------------------------------------------------------- */
 /* Fonts                                                                       */
@@ -100,23 +107,21 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`
-    ${displayFont.variable}
-    ${bodyFont.variable}
-    ${monoFont.variable}
-    h-full
-    scroll-smooth
-    antialiased
-  `}
+      className={cn(
+        "h-full",
+        "scroll-smooth",
+        "antialiased",
+        displayFont.variable,
+        bodyFont.variable,
+        monoFont.variable,
+        "font-sans",
+        notoSans.variable,
+        playfairDisplayHeading.variable,
+      )}
     >
-      <head>
-        <link rel="canonical" href={siteConfig.url} />
-
-        <JsonLd data={[organizationSchema(), websiteSchema()]} />
-      </head>
       <body className="relative isolate min-h-screen overflow-x-hidden text-text-primary bg-background">
         <ThemeProvider>
-          <PwaRegister />
+          {/* <PwaRegister /> */}
 
           <div className="relative flex min-h-screen flex-col">
             <div className="relative flex-1">{children}</div>
