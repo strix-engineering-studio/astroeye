@@ -1,4 +1,4 @@
-import EditUsersPage from "@/features/users/pages/EditUserPage";
+import EditUsersPage from "@/features/customers/pages/EditUserPage";
 
 export default function Page() {
   return <EditUsersPage />;

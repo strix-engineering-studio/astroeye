@@ -1,158 +1,235 @@
-import React from "react";
+"use client";
+
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  GoogleAuthProvider,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  signInWithPopup,
+} from "firebase/auth";
+import { LoaderCircle, Phone, Sparkles, User } from "lucide-react";
 
-import { useAuth } from "@/providers/AuthProvider";
-import { toast } from "sonner";
+import { clientAuth } from "@/lib/firebase/client";
+import { useGoogleLogin } from "@/features/auth/hooks/useAuth";
+import { usePhoneAuth } from "@/features/auth/context/phone-auth.context";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import AuthLayout from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
-
-import { LoginFormValues, loginSchema } from "../schemas/auth.schema";
-import Link from "next/link";
-
-export default function LoginPage() {
+export default function Login() {
   const router = useRouter();
-  const { login } = useAuth();
+  const googleLogin = useGoogleLogin();
+  const { setPendingVerification } = usePhoneAuth();
 
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [showPassword, setShowPassword] = React.useState(false);
+  const recaptchaRef = useRef<HTMLDivElement>(null);
+  const verifierRef = useRef<RecaptchaVerifier | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [error, setError] = useState("");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const handleGoogleLogin = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+
     try {
-      setIsSubmitting(true);
+      const result = await signInWithPopup(
+        clientAuth!,
+        new GoogleAuthProvider(),
+      );
 
-      await login(data.email, data.password);
+      const idToken = await result.user.getIdToken();
 
-      toast.success("Login successful");
+      await googleLogin.mutateAsync({ idToken });
 
-      router.push("/");
-    } catch (error: unknown) {
-      const err = error as Error;
-      toast.error(err?.message || "Login failed");
+      router.replace("/account");
+    } catch (err) {
+      const code =
+        typeof err === "object" && err !== null && "code" in err
+          ? String(err.code)
+          : "";
+
+      if (code === "auth/popup-closed-by-user") {
+        return;
+      }
+
+      setError(
+        err instanceof Error ? err.message : "Unable to sign in with Google.",
+      );
     } finally {
-      setIsSubmitting(false);
+      setIsGoogleLoading(false);
     }
   };
 
+  const handleSendOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+
+    const normalizedPhone = phoneNumber.trim();
+
+    if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+      setError(
+        "Enter a valid phone number with country code, e.g. +919876543210.",
+      );
+      return;
+    }
+
+    setIsSendingOtp(true);
+
+    try {
+      if (!recaptchaRef.current) {
+        throw new Error(
+          "Phone verification is not ready. Refresh and try again.",
+        );
+      }
+
+      verifierRef.current?.clear();
+
+      const verifier = new RecaptchaVerifier(
+        clientAuth!,
+        recaptchaRef.current,
+        {
+          size: "invisible",
+        },
+      );
+
+      verifierRef.current = verifier;
+
+      const confirmationResult = await signInWithPhoneNumber(
+        clientAuth!,
+        normalizedPhone,
+        verifier,
+      );
+
+      setPendingVerification(normalizedPhone, confirmationResult);
+
+      router.push("/verify-phone");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to send the OTP. Please try again.",
+      );
+
+      verifierRef.current?.clear();
+      verifierRef.current = null;
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const isBusy = isGoogleLoading || googleLogin.isPending;
+
   return (
-    <AuthLayout>
-      <Card className="w-full min-w-sm">
+    <main className="flex min-h-screen items-center justify-center bg-[#faf7f0] px-4 py-10">
+      <Card className="w-full max-w-md border-stone-200 bg-white shadow-sm">
         <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border">
-            <Image
-              src="/astroeye-logo-512x512.png"
-              alt="Logo"
-              width={50}
-              height={50}
-              className="h-6 w-6 object-contain"
-            />
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-800">
+            <Sparkles className="h-6 w-6" />
           </div>
 
-          <CardTitle className="text-2xl">Sign In</CardTitle>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+              Welcome to Astroeye
+            </h1>
+            <p className="text-sm text-stone-500">
+              Sign in to continue your spiritual journey.
+            </p>
+          </div>
         </CardHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            {/* Email */}
+        <CardContent className="space-y-5">
+          {error && (
+            <div
+              role="alert"
+              className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            >
+              {error}
+            </div>
+          )}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full"
+            disabled={isBusy || isSendingOtp}
+            onClick={handleGoogleLogin}
+          >
+            {isBusy ? (
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <User className="mr-2 h-4 w-4" />
+            )}
+            Continue with Google
+          </Button>
+
+          <div className="relative">
+            <Separator />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-stone-400">
+              OR
+            </span>
+          </div>
+
+          <form onSubmit={handleSendOtp} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="phoneNumber">Phone number</Label>
 
               <div className="relative">
-                <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-10"
-                  {...register("email")}
+                  id="phoneNumber"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+919876543210"
+                  value={phoneNumber}
+                  onChange={(event) => setPhoneNumber(event.target.value)}
+                  className="h-11 pl-10"
+                  disabled={isSendingOtp || isBusy}
+                  required
                 />
               </div>
 
-              {errors.email && (
-                <p className="text-destructive text-sm">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-
-              <div className="relative">
-                <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter password"
-                  className="pr-10 pl-10"
-                  {...register("password")}
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-
-              {errors.password && (
-                <p className="text-destructive text-sm">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Signing In..." : "Sign In"}
-            </Button>
-
-            {/* Attribution */}
-            <div className="border-t pt-4">
-              <p className="text-muted-foreground text-center text-xs">
-                Crafted by{" "}
-                <Link
-                  href="https://strix.website"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground font-semibold transition-colors"
-                >
-                  Astroeye
-                </Link>
+              <p className="text-xs text-stone-500">
+                Include your country code.
               </p>
             </div>
-          </CardContent>
-        </form>
+
+            <Button
+              type="submit"
+              className="h-11 w-full bg-stone-900 text-white hover:bg-stone-800"
+              disabled={isSendingOtp || isBusy}
+            >
+              {isSendingOtp ? (
+                <>
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  Sending code...
+                </>
+              ) : (
+                "Continue with phone"
+              )}
+            </Button>
+          </form>
+
+          <div ref={recaptchaRef} />
+
+          <p className="text-center text-xs leading-relaxed text-stone-500">
+            By continuing, you agree to our{" "}
+            <a href="/terms" className="underline underline-offset-4">
+              Terms
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" className="underline underline-offset-4">
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </CardContent>
       </Card>
-    </AuthLayout>
+    </main>
   );
 }

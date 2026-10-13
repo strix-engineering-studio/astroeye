@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 
 import * as Sentry from "@sentry/nextjs";
 import pino, { type Logger, type LoggerOptions } from "pino";

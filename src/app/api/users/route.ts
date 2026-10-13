@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { verifySession } from "@/lib/auth/session";
-import { createUserSchema } from "@/features/users";
-import { usersRepository } from "@/features/users/repository/user.repository";
+import { createUserSchema } from "@/features/customers";
+import { usersRepository } from "@/features/customers/repository/user.repository";
 import {
   Gender,
   MembershipType,
   Relationship,
   UserFilters,
-} from "@/features/users";
+} from "@/features/customers";
 
 export async function GET(request: NextRequest) {
   try {

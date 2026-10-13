@@ -58,4 +58,5 @@ export const COLLECTIONS = {
   MEETUP_CATEGORIES: "meetup_categories",
   EXPERT_REQUESTS: "expert_requests",
   ORDERS: "orders",
+  COUPONS: "coupons",
 } as const;

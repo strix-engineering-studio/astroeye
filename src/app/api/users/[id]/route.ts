@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { verifySession } from "@/lib/auth/session";
-import { usersRepository } from "@/features/users/repository/user.repository";
-import { editUserSchema } from "@/features/users/schemas";
+import { usersRepository } from "@/features/customers/repository/user.repository";
+import { editUserSchema } from "@/features/customers/schemas";
 import { ZodError } from "zod";
 
 export async function GET(

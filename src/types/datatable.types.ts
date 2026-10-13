@@ -5,7 +5,7 @@ import {
   PaginationState,
   RowSelectionState,
   SortingState,
-  VisibilityState,
+  ColumnVisibilityState,
 } from "@tanstack/react-table";
 
 export interface DataTableProps<TData, TValue> {
@@ -40,8 +40,8 @@ export interface DataTableProps<TData, TValue> {
   pageCount?: number;
 
   // Visibility
-  columnVisibility?: VisibilityState;
-  onColumnVisibilityChange?: OnChangeFn<VisibilityState>;
+  columnVisibility?: ColumnVisibilityState;
+  onColumnVisibilityChange?: OnChangeFn<ColumnVisibilityState>;
 
   // Row Selection
   rowSelection?: RowSelectionState;

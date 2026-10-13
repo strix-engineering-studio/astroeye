@@ -1,4 +1,4 @@
-import CreateUserPage from "@/features/users/pages/CreateUserPage";
+import CreateUserPage from "@/features/customers/pages/CreateUserPage";
 
 export default function Page() {
   return <CreateUserPage />;

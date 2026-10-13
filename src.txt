@@ -3,44 +3,41 @@
 
  Directory of P:\project\Astroeye\src
 
-[.]                         instrumentation.ts
-[..]                        [lib]
-[app]                       [providers]
-[app.console]               proxy.ts
+[.]                         [lib]
+[..]                        [providers]
+[app]                       proxy.ts
 [components]                [scripts]
-[components=forms]          [types]
-[content]                   [utils]
-[features]                  [validator]
-[hooks]                     
-instrumentation-client.ts   
+[features]                  [types]
+[hooks]                     [utils]
+instrumentation-client.ts   [validator]
+instrumentation.ts          
                3 File(s)          1,874 bytes
 
  Directory of P:\project\Astroeye\src\app
 
-[.]                   apple-icon.tsx        [llms.txt]
-[..]                  [checkout]            manifest.ts
-[(auth)]              [console]             not-found.tsx
-[(policies)]          favicon.ico           opengraph-image.tsx
-[(store)]             global-error.tsx      robots.ts
-[(www)]               globals.css           sitemap.ts
-[account]             icon.tsx              
+[.]                   [console]             manifest.ts
+[..]                  favicon.ico           not-found.tsx
+[(auth)]              global-error.tsx      opengraph-image.tsx
+[(policies)]          globals.css           robots.ts
+[(www)]               icon.tsx              sitemap.ts
 [api]                 layout.tsx            
-              11 File(s)         22,087 bytes
+apple-icon.tsx        [llms.txt]            
+              11 File(s)         21,947 bytes
 
  Directory of P:\project\Astroeye\src\app\(auth)
 
-[.]      [..]     [login]  [signup] 
-               0 File(s)              0 bytes
+[.]          [..]         layout.tsx   [login]      [verify]     
+               1 File(s)            265 bytes
 
  Directory of P:\project\Astroeye\src\app\(auth)\login
 
 [.]        [..]       page.tsx   
-               1 File(s)              0 bytes
+               1 File(s)            118 bytes
 
- Directory of P:\project\Astroeye\src\app\(auth)\signup
+ Directory of P:\project\Astroeye\src\app\(auth)\verify
 
 [.]        [..]       page.tsx   
-               1 File(s)              0 bytes
+               1 File(s)            140 bytes
 
  Directory of P:\project\Astroeye\src\app\(policies)
 
@@ -51,32 +48,27 @@ instrumentation-client.ts
  Directory of P:\project\Astroeye\src\app\(policies)\cancellation
 
 [.]        [..]       page.tsx   
-               1 File(s)              0 bytes
+               1 File(s)          3,394 bytes
 
  Directory of P:\project\Astroeye\src\app\(policies)\privacy
 
 [.]        [..]       page.tsx   
-               1 File(s)              0 bytes
+               1 File(s)          5,517 bytes
 
  Directory of P:\project\Astroeye\src\app\(policies)\returns
 
 [.]        [..]       page.tsx   
-               1 File(s)              0 bytes
+               1 File(s)          4,956 bytes
 
  Directory of P:\project\Astroeye\src\app\(policies)\shipping
 
 [.]        [..]       page.tsx   
-               1 File(s)              0 bytes
+               1 File(s)          4,317 bytes
 
  Directory of P:\project\Astroeye\src\app\(policies)\terms
 
 [.]        [..]       page.tsx   
-               1 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\app\(store)
-
-[.]  [..] 
-               0 File(s)              0 bytes
+               1 File(s)          4,887 bytes
 
  Directory of P:\project\Astroeye\src\app\(www)
 
@@ -129,15 +121,10 @@ instrumentation-client.ts
 [.]        [..]       page.tsx   
                1 File(s)              0 bytes
 
- Directory of P:\project\Astroeye\src\app\account
-
-[.]  [..] 
-               0 File(s)              0 bytes
-
  Directory of P:\project\Astroeye\src\app\api
 
-[.]         [admins]    [contact]   [payments]  [users]     
-[..]        [auth]      [orders]    [resources] 
+[.]          [admins]     [auth-admin] [orders]     [users]      
+[..]         [auth]       [contact]    [payments]   
                0 File(s)              0 bytes
 
  Directory of P:\project\Astroeye\src\app\api\admins
@@ -152,7 +139,22 @@ instrumentation-client.ts
 
  Directory of P:\project\Astroeye\src\app\api\auth
 
-[.]      [..]     [login]  [logout] [me]     
+[.]        [..]       [customer] [login]    [logout]   [me]       
+               0 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\app\api\auth\customer
+
+[.]      [..]     [google] [phone]  
+               0 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\app\api\auth\customer\google
+
+[.]  [..] 
+               0 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\app\api\auth\customer\phone
+
+[.]  [..] 
                0 File(s)              0 bytes
 
  Directory of P:\project\Astroeye\src\app\api\auth\login
@@ -166,6 +168,26 @@ instrumentation-client.ts
                1 File(s)            845 bytes
 
  Directory of P:\project\Astroeye\src\app\api\auth\me
+
+[.]        [..]       route.ts   
+               1 File(s)            786 bytes
+
+ Directory of P:\project\Astroeye\src\app\api\auth-admin
+
+[.]      [..]     [login]  [logout] [me]     
+               0 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\app\api\auth-admin\login
+
+[.]        [..]       route.ts   
+               1 File(s)          3,532 bytes
+
+ Directory of P:\project\Astroeye\src\app\api\auth-admin\logout
+
+[.]        [..]       route.ts   
+               1 File(s)            845 bytes
+
+ Directory of P:\project\Astroeye\src\app\api\auth-admin\me
 
 [.]        [..]       route.ts   
                1 File(s)            786 bytes
@@ -206,40 +228,20 @@ instrumentation-client.ts
 [.]        [..]       route.ts   
                1 File(s)         15,939 bytes
 
- Directory of P:\project\Astroeye\src\app\api\resources
-
-[.]        [..]       route.ts   [[id]]     
-               1 File(s)          3,643 bytes
-
- Directory of P:\project\Astroeye\src\app\api\resources\[id]
-
-[.]         [..]        [downloads] route.ts    
-               1 File(s)          4,616 bytes
-
- Directory of P:\project\Astroeye\src\app\api\resources\[id]\downloads
-
-[.]        [..]       route.ts   
-               1 File(s)          1,148 bytes
-
  Directory of P:\project\Astroeye\src\app\api\users
 
 [.]        [..]       route.ts   [[id]]     
-               1 File(s)          3,610 bytes
+               1 File(s)          3,622 bytes
 
  Directory of P:\project\Astroeye\src\app\api\users\[id]
 
 [.]        [..]       [restore]  route.ts   
-               1 File(s)          3,604 bytes
+               1 File(s)          3,612 bytes
 
  Directory of P:\project\Astroeye\src\app\api\users\[id]\restore
 
 [.]        [..]       route.ts   
-               1 File(s)            733 bytes
-
- Directory of P:\project\Astroeye\src\app\checkout
-
-[.]  [..] 
-               0 File(s)              0 bytes
+               1 File(s)            737 bytes
 
  Directory of P:\project\Astroeye\src\app\console
 
@@ -290,12 +292,12 @@ instrumentation-client.ts
  Directory of P:\project\Astroeye\src\app\console\(admin)\users
 
 [.]        [..]       [create]   page.tsx   [[id]]     
-               1 File(s)            246 bytes
+               1 File(s)            250 bytes
 
  Directory of P:\project\Astroeye\src\app\console\(admin)\users\create
 
 [.]        [..]       page.tsx   
-               1 File(s)            133 bytes
+               1 File(s)            137 bytes
 
  Directory of P:\project\Astroeye\src\app\console\(admin)\users\[id]
 
@@ -305,7 +307,7 @@ instrumentation-client.ts
  Directory of P:\project\Astroeye\src\app\console\(admin)\users\[id]\edit
 
 [.]        [..]       page.tsx   
-               1 File(s)            129 bytes
+               1 File(s)            133 bytes
 
  Directory of P:\project\Astroeye\src\app\console\(auth)
 
@@ -322,21 +324,16 @@ instrumentation-client.ts
 [.]        [..]       route.ts   
                1 File(s)          1,408 bytes
 
- Directory of P:\project\Astroeye\src\app.console
-
-[.]  [..] 
-               0 File(s)              0 bytes
-
  Directory of P:\project\Astroeye\src\components
 
 [.]                      footer-wordmark.tsx      site-footer.tsx
 [..]                     [layout]                 site-header.tsx
-[admin]                  nav-documents.tsx        strix-cursor.tsx
-app-sidebar.tsx          nav-main.tsx             [tables]
-CommandMenu.tsx          nav-secondary.tsx        [ui]
-[contact]                nav-user.tsx             [wrappers]
+[admin]                  nav-documents.tsx        [tables]
+app-sidebar.tsx          nav-main.tsx             [ui]
+CommandMenu.tsx          nav-secondary.tsx        [wrappers]
+[contact]                nav-user.tsx             
 environment-banner.tsx   [navigation]             
-              11 File(s)         50,750 bytes
+              10 File(s)         45,632 bytes
 
  Directory of P:\project\Astroeye\src\components\admin
 
@@ -353,9 +350,10 @@ contact-form.tsx
 
  Directory of P:\project\Astroeye\src\components\layout
 
-[.]                  AdminLayout.tsx      CustomerLayout.tsx
-[..]                 AuthLayout.tsx       
-               3 File(s)          2,395 bytes
+[.]                  AuthLayout.tsx       
+[..]                 CustomerLayout.tsx   
+AdminLayout.tsx      policy-layout.tsx    
+               4 File(s)          5,227 bytes
 
  Directory of P:\project\Astroeye\src\components\navigation
 
@@ -369,7 +367,7 @@ contact-form.tsx
 DataTable.tsx               FilterDropdown.tsx
 DataTableExportDialog.tsx   
 DataTablePagination.tsx     
-               6 File(s)         26,035 bytes
+               6 File(s)         27,171 bytes
 
  Directory of P:\project\Astroeye\src\components\ui
 
@@ -403,73 +401,12 @@ confirm-dialog.tsx     popover.tsx
 [..]              FormWrapper.tsx   
                3 File(s)         15,475 bytes
 
- Directory of P:\project\Astroeye\src\components=forms
-
-[.]  [..] 
-               0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\content
-
-[.]         [..]        [astrology] [blog]      
-               0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\content\astrology
-
-[.]          [..]         profile.ts   
-               1 File(s)          5,999 bytes
-
- Directory of P:\project\Astroeye\src\content\blog
-
-[.]
-[..]
-ai-systems-that-feel-native.mdx
-nestjs-architecture-for-operational-products.mdx
-scalable-api-ops.mdx
-
-               3 File(s)          1,956 bytes
-
  Directory of P:\project\Astroeye\src\features
 
-[.]             [auth]          [coupons]       [payments]      [users]
-[..]            [cart]          [customers]     [products]      
-[addresses]     [categories]    [inventory]     [resources]     
-[admin]         [collections]   [notifications] [reviews]       
-[admins]        [content]       [orders]        [shipping]      
+[.]             [auth]          [customers]     [payments]      
+[..]            [auth-admin]    [notifications] [products]      
+[admins]        [coupons]       [orders]        [reviews]       
                0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\features\addresses
-
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\features\addresses\repository
-
-[.]                     address.repository.ts   
-[..]                    
-               1 File(s)          2,165 bytes
-
- Directory of P:\project\Astroeye\src\features\addresses\schemas
-
-[.]                 address.schema.ts   
-[..]                index.ts            
-               2 File(s)          1,375 bytes
-
- Directory of P:\project\Astroeye\src\features\admin
-
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\features\admin\repository
-
-[.]                   admin.repository.ts   
-[..]                  
-               1 File(s)          1,689 bytes
-
- Directory of P:\project\Astroeye\src\features\admin\schemas
-
-[.]               admin.schema.ts   
-[..]              index.ts          
-               2 File(s)            952 bytes
 
  Directory of P:\project\Astroeye\src\features\admins
 
@@ -492,7 +429,7 @@ scalable-api-ops.mdx
 
 [.]                  AdminUsersPage.tsx   
 [..]                 
-               1 File(s)          5,663 bytes
+               1 File(s)          5,655 bytes
 
  Directory of P:\project\Astroeye\src\features\admins\repository
 
@@ -519,25 +456,39 @@ scalable-api-ops.mdx
 
  Directory of P:\project\Astroeye\src\features\auth
 
-[.]          [hooks]      [pages]      [schemas]    [types]      
-[..]         index.ts     [repository] [services]   
+[.]          [components] [hooks]      [pages]      [schemas]    [types]
+[..]         [context]    index.ts     [repository] [services]   
                1 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\features\auth\components
+
+[.]                       GoogleSignInButton.tsx    
+[..]                      OtpVerificationForm.tsx   
+AuthError.tsx             PhoneNumberForm.tsx       
+               4 File(s)         12,605 bytes
+
+ Directory of P:\project\Astroeye\src\features\auth\context
+
+[.]                      phone-auth.context.tsx   
+[..]                     
+               1 File(s)          1,525 bytes
 
  Directory of P:\project\Astroeye\src\features\auth\hooks
 
 [.]          [..]         useAuth.ts   
-               1 File(s)              0 bytes
+               1 File(s)          1,551 bytes
 
  Directory of P:\project\Astroeye\src\features\auth\pages
 
-[.]             [..]            LoginPage.tsx   
-               1 File(s)          4,950 bytes
+[.]              LoginPage.tsx    
+[..]             VerifyPage.tsx   
+               2 File(s)         14,778 bytes
 
  Directory of P:\project\Astroeye\src\features\auth\repository
 
 [.]                  auth.repository.ts   
 [..]                 
-               1 File(s)          7,599 bytes
+               1 File(s)          9,635 bytes
 
  Directory of P:\project\Astroeye\src\features\auth\schemas
 
@@ -547,136 +498,156 @@ scalable-api-ops.mdx
  Directory of P:\project\Astroeye\src\features\auth\services
 
 [.]              [..]             authService.ts   
-               1 File(s)            408 bytes
+               1 File(s)          1,356 bytes
 
  Directory of P:\project\Astroeye\src\features\auth\types
 
 [.]             [..]            auth.types.ts   
+               1 File(s)            581 bytes
+
+ Directory of P:\project\Astroeye\src\features\auth-admin
+
+[.]          [hooks]      [pages]      [schemas]    [types]      
+[..]         index.ts     [repository] [services]   
                1 File(s)              0 bytes
 
- Directory of P:\project\Astroeye\src\features\cart
+ Directory of P:\project\Astroeye\src\features\auth-admin\hooks
 
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
+[.]          [..]         useAuth.ts   
+               1 File(s)              0 bytes
 
- Directory of P:\project\Astroeye\src\features\cart\repository
+ Directory of P:\project\Astroeye\src\features\auth-admin\pages
 
-[.]                  cart.repository.ts   
+[.]             [..]            LoginPage.tsx   
+               1 File(s)          4,957 bytes
+
+ Directory of P:\project\Astroeye\src\features\auth-admin\repository
+
+[.]                  auth.repository.ts   
 [..]                 
-               1 File(s)          2,833 bytes
+               1 File(s)          7,599 bytes
 
- Directory of P:\project\Astroeye\src\features\cart\schemas
+ Directory of P:\project\Astroeye\src\features\auth-admin\schemas
 
-[.]              cart.schema.ts   
-[..]             index.ts         
-               2 File(s)            537 bytes
+[.]              [..]             auth.schema.ts   
+               1 File(s)            257 bytes
 
- Directory of P:\project\Astroeye\src\features\categories
+ Directory of P:\project\Astroeye\src\features\auth-admin\services
 
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
+[.]              [..]             authService.ts   
+               1 File(s)            408 bytes
 
- Directory of P:\project\Astroeye\src\features\categories\repository
+ Directory of P:\project\Astroeye\src\features\auth-admin\types
 
-[.]                      category.repository.ts   
-[..]                     
-               1 File(s)          2,021 bytes
-
- Directory of P:\project\Astroeye\src\features\categories\schemas
-
-[.]                  category.schema.ts   
-[..]                 index.ts             
-               2 File(s)            600 bytes
-
- Directory of P:\project\Astroeye\src\features\collections
-
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\features\collections\repository
-
-[.]                        collection.repository.ts
-[..]                       
-               1 File(s)          3,116 bytes
-
- Directory of P:\project\Astroeye\src\features\collections\schemas
-
-[.]                    collection.schema.ts   
-[..]                   index.ts               
-               2 File(s)            553 bytes
-
- Directory of P:\project\Astroeye\src\features\content
-
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\features\content\repository
-
-[.]                     content.repository.ts   
-[..]                    
-               1 File(s)          1,975 bytes
-
- Directory of P:\project\Astroeye\src\features\content\schemas
-
-[.]                 content.schema.ts   
-[..]                index.ts            
-               2 File(s)            723 bytes
+[.]             [..]            auth.types.ts   
+               1 File(s)              0 bytes
 
  Directory of P:\project\Astroeye\src\features\coupons
 
-[.]          [..]         [repository] [schemas]    
+[.]          [components] [pages]      [schemas]    [types]      
+[..]         [hooks]      [repository] [services]   
                0 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\features\coupons\components
+
+[.]              [..]             CouponForm.tsx   
+               1 File(s)         13,344 bytes
+
+ Directory of P:\project\Astroeye\src\features\coupons\hooks
+
+[.]            [..]           useCoupon.ts   
+               1 File(s)          4,464 bytes
+
+ Directory of P:\project\Astroeye\src\features\coupons\pages
+
+[.]                     CouponDetailsPage.tsx   
+[..]                    CouponsPage.tsx         
+               2 File(s)         22,275 bytes
 
  Directory of P:\project\Astroeye\src\features\coupons\repository
 
 [.]                    coupon.repository.ts   
 [..]                   
-               1 File(s)          2,005 bytes
+               1 File(s)          7,552 bytes
 
  Directory of P:\project\Astroeye\src\features\coupons\schemas
 
 [.]                coupon.schema.ts   
 [..]               index.ts           
-               2 File(s)          1,011 bytes
+               2 File(s)          2,238 bytes
+
+ Directory of P:\project\Astroeye\src\features\coupons\services
+
+[.]                 [..]                coupon.service.ts   
+               1 File(s)          1,096 bytes
+
+ Directory of P:\project\Astroeye\src\features\coupons\types
+
+[.]              [..]             coupon.type.ts   
+               1 File(s)            695 bytes
 
  Directory of P:\project\Astroeye\src\features\customers
 
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
+[.]          [components] [hooks]      [pages]      [schemas]    [types]
+[..]         [constants]  index.ts     [repository] [services]   
+               1 File(s)            121 bytes
+
+ Directory of P:\project\Astroeye\src\features\customers\components
+
+[.]            [..]           UserForm.tsx   UsersMap.tsx   
+               2 File(s)         20,154 bytes
+
+ Directory of P:\project\Astroeye\src\features\customers\constants
+
+[.]               countryCodes.ts   
+[..]              index.ts          
+               2 File(s)         14,984 bytes
+
+ Directory of P:\project\Astroeye\src\features\customers\hooks
+
+[.]           [..]          useUsers.ts   
+               1 File(s)          3,546 bytes
+
+ Directory of P:\project\Astroeye\src\features\customers\pages
+
+[.]                   EditUserPage.tsx      UsersPage.tsx
+[..]                  UserDetailsPage.tsx   
+CreateUserPage.tsx    UsersMapPage.tsx      
+               5 File(s)         26,702 bytes
 
  Directory of P:\project\Astroeye\src\features\customers\repository
 
-[.]                      customer.repository.ts   
-[..]                     
-               1 File(s)          2,006 bytes
+[.]                  user.repository.ts   
+[..]                 
+               1 File(s)          9,539 bytes
 
  Directory of P:\project\Astroeye\src\features\customers\schemas
 
-[.]                  customer.schema.ts   
-[..]                 index.ts             
-               2 File(s)          1,227 bytes
+[.]        [..]       index.ts   
+               1 File(s)          3,210 bytes
 
- Directory of P:\project\Astroeye\src\features\inventory
+ Directory of P:\project\Astroeye\src\features\customers\services
 
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
+[.]               [..]              usersService.ts   
+               1 File(s)          2,061 bytes
 
- Directory of P:\project\Astroeye\src\features\inventory\repository
+ Directory of P:\project\Astroeye\src\features\customers\types
 
-[.]                       inventory.repository.ts   
-[..]                      
-               1 File(s)          2,631 bytes
-
- Directory of P:\project\Astroeye\src\features\inventory\schemas
-
-[.]                   index.ts              
-[..]                  inventory.schema.ts   
-               2 File(s)            786 bytes
+[.]              index.ts         users.types.ts   
+[..]             users.enums.ts   
+               3 File(s)          3,032 bytes
 
  Directory of P:\project\Astroeye\src\features\notifications
 
-[.]          [..]         [repository] [schemas]    
+[.]          [hooks]      [schemas]    [types]      
+[..]         [repository] [services]   
                0 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\features\notifications\hooks
+
+[.]                  useNotification.ts   
+[..]                 
+               1 File(s)          4,923 bytes
 
  Directory of P:\project\Astroeye\src\features\notifications\repository
 
@@ -689,6 +660,18 @@ scalable-api-ops.mdx
 [.]                      index.ts                 
 [..]                     notification.schema.ts   
                2 File(s)            714 bytes
+
+ Directory of P:\project\Astroeye\src\features\notifications\services
+
+[.]                       notification.service.ts   
+[..]                      
+               1 File(s)          1,348 bytes
+
+ Directory of P:\project\Astroeye\src\features\notifications\types
+
+[.]                    notification.type.ts   
+[..]                   
+               1 File(s)            466 bytes
 
  Directory of P:\project\Astroeye\src\features\orders
 
@@ -778,14 +761,20 @@ ResourceCheckoutPage.tsx
 
  Directory of P:\project\Astroeye\src\features\products
 
-[.]          [..]         [repository] [schemas]    
+[.]          [hooks]      [schemas]    [types]      
+[..]         [repository] [services]   
                0 File(s)              0 bytes
+
+ Directory of P:\project\Astroeye\src\features\products\hooks
+
+[.]             [..]            useProduct.ts   
+               1 File(s)          5,279 bytes
 
  Directory of P:\project\Astroeye\src\features\products\repository
 
 [.]                     product.repository.ts   
 [..]                    
-               1 File(s)          2,557 bytes
+               1 File(s)          9,013 bytes
 
  Directory of P:\project\Astroeye\src\features\products\schemas
 
@@ -793,51 +782,16 @@ ResourceCheckoutPage.tsx
 [..]                product.schema.ts   
                2 File(s)            894 bytes
 
- Directory of P:\project\Astroeye\src\features\resources
+ Directory of P:\project\Astroeye\src\features\products\services
 
-[.]          [components] index.ts     [repository] [services]   
-[..]         [hooks]      [pages]      [schemas]    [types]      
-               1 File(s)            376 bytes
+[.]                  product.service.ts   
+[..]                 
+               1 File(s)          1,384 bytes
 
- Directory of P:\project\Astroeye\src\features\resources\components
+ Directory of P:\project\Astroeye\src\features\products\types
 
-[.]                [..]               ResourceForm.tsx   
-               1 File(s)         11,614 bytes
-
- Directory of P:\project\Astroeye\src\features\resources\hooks
-
-[.]               [..]              useResources.ts   
-               1 File(s)          7,387 bytes
-
- Directory of P:\project\Astroeye\src\features\resources\pages
-
-[.]                       EditResourcePage.tsx      
-[..]                      ResourceDetailsPage.tsx   
-CreateResourcePage.tsx    ResourcesPage.tsx         
-               4 File(s)         40,243 bytes
-
- Directory of P:\project\Astroeye\src\features\resources\repository
-
-[.]                       resources.repository.ts   
-[..]                      
-               1 File(s)         10,397 bytes
-
- Directory of P:\project\Astroeye\src\features\resources\schemas
-
-[.]        [..]       index.ts   
-               1 File(s)          3,188 bytes
-
- Directory of P:\project\Astroeye\src\features\resources\services
-
-[.]                   resourcesService.ts   
-[..]                  
-               1 File(s)          2,843 bytes
-
- Directory of P:\project\Astroeye\src\features\resources\types
-
-[.]                  index.ts             resources.types.ts
-[..]                 resources.enums.ts   
-               3 File(s)          4,397 bytes
+[.]               [..]              product.type.ts   
+               1 File(s)            516 bytes
 
  Directory of P:\project\Astroeye\src\features\reviews
 
@@ -855,74 +809,6 @@ CreateResourcePage.tsx    ResourcesPage.tsx
 [.]                index.ts           
 [..]               review.schema.ts   
                2 File(s)            698 bytes
-
- Directory of P:\project\Astroeye\src\features\shipping
-
-[.]          [..]         [repository] [schemas]    
-               0 File(s)              0 bytes
-
- Directory of P:\project\Astroeye\src\features\shipping\repository
-
-[.]                      shipping.repository.ts   
-[..]                     
-               1 File(s)          2,397 bytes
-
- Directory of P:\project\Astroeye\src\features\shipping\schemas
-
-[.]                  index.ts             
-[..]                 shipping.schema.ts   
-               2 File(s)            850 bytes
-
- Directory of P:\project\Astroeye\src\features\users
-
-[.]          [components] [hooks]      [pages]      [schemas]    [types]
-[..]         [constants]  index.ts     [repository] [services]   
-               1 File(s)            121 bytes
-
- Directory of P:\project\Astroeye\src\features\users\components
-
-[.]            [..]           UserForm.tsx   UsersMap.tsx   
-               2 File(s)         20,154 bytes
-
- Directory of P:\project\Astroeye\src\features\users\constants
-
-[.]               countryCodes.ts   
-[..]              index.ts          
-               2 File(s)         14,984 bytes
-
- Directory of P:\project\Astroeye\src\features\users\hooks
-
-[.]           [..]          useUsers.ts   
-               1 File(s)          3,546 bytes
-
- Directory of P:\project\Astroeye\src\features\users\pages
-
-[.]                   EditUserPage.tsx      UsersPage.tsx
-[..]                  UserDetailsPage.tsx   
-CreateUserPage.tsx    UsersMapPage.tsx      
-               5 File(s)         26,702 bytes
-
- Directory of P:\project\Astroeye\src\features\users\repository
-
-[.]                  user.repository.ts   
-[..]                 
-               1 File(s)          9,539 bytes
-
- Directory of P:\project\Astroeye\src\features\users\schemas
-
-[.]        [..]       index.ts   
-               1 File(s)          3,210 bytes
-
- Directory of P:\project\Astroeye\src\features\users\services
-
-[.]               [..]              usersService.ts   
-               1 File(s)          2,061 bytes
-
- Directory of P:\project\Astroeye\src\features\users\types
-
-[.]              index.ts         users.types.ts   
-[..]             users.enums.ts   
-               3 File(s)          3,032 bytes
 
  Directory of P:\project\Astroeye\src\hooks
 
@@ -958,7 +844,7 @@ datetime.ts          [razorpay]
 
 [.]              COLLECTIONS.ts   ROUTES.ts        
 [..]             QUERY_KEYS.ts    
-               3 File(s)          2,258 bytes
+               3 File(s)          2,280 bytes
 
  Directory of P:\project\Astroeye\src\lib\firebase
 
@@ -971,7 +857,7 @@ admin.ts                  seed-admin.ts
  Directory of P:\project\Astroeye\src\lib\logger
 
 [.]        [..]       index.ts   
-               1 File(s)          4,151 bytes
+               1 File(s)          4,154 bytes
 
  Directory of P:\project\Astroeye\src\lib\middleware
 
@@ -996,10 +882,10 @@ admin.ts                  seed-admin.ts
 
  Directory of P:\project\Astroeye\src\providers
 
-[.]                   AuthProvider.tsx      
+[.]                   AuthProvider.tsx      ToolTipProvider.tsx
 [..]                  index.tsx             
-AppProviders.tsx      ToolTipProvider.tsx   
-               4 File(s)          5,027 bytes
+AppProviders.tsx      theme-provider.tsx    
+               5 File(s)          4,084 bytes
 
  Directory of P:\project\Astroeye\src\scripts
 
@@ -1011,7 +897,7 @@ AppProviders.tsx      ToolTipProvider.tsx
 [.]                    form.types.ts          PaginatedResponse.ts
 [..]                   index.ts               razorpay.d.ts
 datatable.types.ts     linkedin.d.ts          
-               6 File(s)          3,734 bytes
+               6 File(s)          3,752 bytes
 
  Directory of P:\project\Astroeye\src\utils
 
@@ -1024,5 +910,5 @@ datatable.types.ts     linkedin.d.ts
                2 File(s)          3,048 bytes
 
      Total Files Listed:
-             314 File(s)      1,071,796 bytes
-             527 Dir(s)  45,052,530,688 bytes free
+             297 File(s)      1,083,463 bytes
+             470 Dir(s)  40,797,970,432 bytes free

@@ -1,3 +1,4 @@
+
 import { adminAuth } from "@/lib/firebase/admin";
 import { firestoreService } from "@/lib/firebase/admin-firestore";
 import { COLLECTIONS } from "@/lib/constants/COLLECTIONS";
@@ -6,6 +7,12 @@ import { logger } from "@/lib/logger";
 
 const FIREBASE_AUTH_ENDPOINT =
   "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword";
+
+const DEFAULT_SESSION_EXPIRY = 5 * 24 * 60 * 60 * 1000;
+const MIN_SESSION_EXPIRY = 5 * 60 * 1000;
+const MAX_SESSION_EXPIRY = 14 * 24 * 60 * 60 * 1000;
+
+type CustomerProvider = "google.com" | "phone";
 
 interface FirebaseLoginResponse {
   idToken: string;
@@ -20,12 +27,17 @@ interface FirebaseAuthErrorResponse {
   error?: {
     code?: number;
     message?: string;
-    errors?: Array<{
-      message?: string;
-      domain?: string;
-      reason?: string;
-    }>;
   };
+}
+
+interface CustomerAuthResult {
+  uid: string;
+  sessionCookie: string;
+  provider: CustomerProvider;
+  phoneNumber?: string;
+  email?: string;
+  displayName?: string;
+  photoURL?: string;
 }
 
 function isFirebaseAuthErrorResponse(
@@ -37,67 +49,74 @@ function isFirebaseAuthErrorResponse(
 function isFirebaseLoginResponse(
   value: unknown,
 ): value is FirebaseLoginResponse {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const data = value as Record<string, unknown>;
+
   return (
-    typeof value === "object" &&
-    value !== null &&
-    "idToken" in value &&
-    typeof value.idToken === "string" &&
-    value.idToken.length > 0 &&
-    "refreshToken" in value &&
-    typeof value.refreshToken === "string" &&
-    "expiresIn" in value &&
-    typeof value.expiresIn === "string" &&
-    "localId" in value &&
-    typeof value.localId === "string"
+    typeof data.idToken === "string" &&
+    data.idToken.length > 0 &&
+    typeof data.refreshToken === "string" &&
+    typeof data.expiresIn === "string" &&
+    typeof data.localId === "string"
   );
 }
 
-class AuthRepository {
-  /**
-   * Authenticate email/password using Firebase Auth REST API.
-   *
-   * Returns a Firebase ID token and refresh token.
-   */
-  async login(email: string, password: string): Promise<FirebaseLoginResponse> {
-    try {
-      logger.info("Attempting Firebase email/password login", {
-        email,
-      });
+function validateSessionExpiry(expiresIn: number): void {
+  if (
+    !Number.isSafeInteger(expiresIn) ||
+    expiresIn < MIN_SESSION_EXPIRY ||
+    expiresIn > MAX_SESSION_EXPIRY
+  ) {
+    throw new Error(
+      "Session expiry must be between 5 minutes and 14 days",
+    );
+  }
+}
 
+class AuthRepository {
+  // --------------------------------------------------
+  // ADMIN AUTHENTICATION: EMAIL AND PASSWORD ONLY
+  // --------------------------------------------------
+
+  async login(
+    email: string,
+    password: string,
+  ): Promise<FirebaseLoginResponse> {
+    try {
       const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
       if (!apiKey) {
-        throw new Error("NEXT_PUBLIC_FIREBASE_API_KEY is not configured");
+        throw new Error("Firebase API key is not configured");
       }
 
-      const response = await fetch(`${FIREBASE_AUTH_ENDPOINT}?key=${apiKey}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      logger.info("Attempting admin email login");
+
+      const response = await fetch(
+        `${FIREBASE_AUTH_ENDPOINT}?key=${encodeURIComponent(apiKey)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+            returnSecureToken: true,
+          }),
         },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-          returnSecureToken: true,
-        }),
-      });
+      );
 
       const data: unknown = await response.json();
 
       if (!response.ok) {
-        const firebaseError = isFirebaseAuthErrorResponse(data)
-          ? data.error
-          : undefined;
+        const message = isFirebaseAuthErrorResponse(data)
+          ? data.error?.message ?? "UNKNOWN_FIREBASE_AUTH_ERROR"
+          : "UNKNOWN_FIREBASE_AUTH_ERROR";
 
-        const firebaseMessage =
-          firebaseError?.message ?? "UNKNOWN_FIREBASE_AUTH_ERROR";
-
-        logger.warn("Firebase email/password login failed", {
-          email,
-          status: response.status,
-          firebaseMessage,
-        });
-
-        switch (firebaseMessage) {
+        switch (message) {
           case "INVALID_LOGIN_CREDENTIALS":
           case "INVALID_PASSWORD":
           case "EMAIL_NOT_FOUND":
@@ -108,85 +127,150 @@ class AuthRepository {
 
           case "OPERATION_NOT_ALLOWED":
             throw new Error(
-              "Email/password authentication is disabled for this Firebase project",
+              "Email/password authentication is disabled",
             );
 
           case "TOO_MANY_ATTEMPTS_TRY_LATER":
-            throw new Error("Too many login attempts. Please try again later");
+            throw new Error(
+              "Too many login attempts. Please try again later",
+            );
 
           case "INVALID_EMAIL":
             throw new Error("Invalid email address");
 
           default:
             throw new Error(
-              `Firebase authentication failed: ${firebaseMessage}`,
+              `Admin authentication failed: ${message}`,
             );
         }
       }
 
       if (!isFirebaseLoginResponse(data)) {
-        throw new Error(
-          "Firebase login succeeded but no ID token was returned",
-        );
+        throw new Error("Invalid Firebase login response");
       }
 
-      logger.info("Firebase email/password login successful", {
-        email,
-        uid: data.localId,
-      });
+      // IMPORTANT:
+      // The admin API route must verify the ID token,
+      // fetch the matching ADMIN_USERS document, and ensure
+      // user.isActive === true before issuing an admin session.
+
+      logger.info("Admin email authentication successful");
 
       return data;
     } catch (error) {
-      logger.error("Error logging in with email", {
-        email,
-        error,
-      });
-
+      logger.error("Admin email login failed", { error });
       throw error;
     }
   }
 
-  /**
-   * Create Firebase session cookie from a Firebase ID token.
-   *
-   * expiresIn must be milliseconds.
-   * Firebase allows session cookies between 5 minutes
-   * and 2 weeks.
-   */
-  async createSession(idToken: string, expiresIn: number): Promise<string> {
+  // --------------------------------------------------
+  // CUSTOMER SIGNUP / LOGIN: GOOGLE
+  // --------------------------------------------------
+
+  async loginWithGoogle(
+    idToken: string,
+    expiresIn = DEFAULT_SESSION_EXPIRY,
+  ): Promise<CustomerAuthResult> {
+    return this.authenticateCustomer(
+      idToken,
+      "google.com",
+      expiresIn,
+    );
+  }
+
+  // --------------------------------------------------
+  // CUSTOMER SIGNUP / LOGIN: PHONE OTP
+  // --------------------------------------------------
+
+  async loginWithPhoneNumber(
+    idToken: string,
+    expiresIn = DEFAULT_SESSION_EXPIRY,
+  ): Promise<CustomerAuthResult> {
+    return this.authenticateCustomer(
+      idToken,
+      "phone",
+      expiresIn,
+    );
+  }
+
+  // --------------------------------------------------
+  // SHARED CUSTOMER AUTHENTICATION
+  // --------------------------------------------------
+
+  private async authenticateCustomer(
+    idToken: string,
+    expectedProvider: CustomerProvider,
+    expiresIn: number,
+  ): Promise<CustomerAuthResult> {
     try {
-      logger.info("Creating Firebase session cookie");
+      if (!idToken || typeof idToken !== "string") {
+        throw new Error("Firebase ID token is required");
+      }
 
-      logger.info("Firebase Admin configuration", {
-        projectId: adminAuth.app.options.projectId,
-        appName: adminAuth.app.name,
-      });
+      validateSessionExpiry(expiresIn);
 
-      const decodedToken = await adminAuth.verifyIdToken(idToken);
+      // Verify the token's signature, issuer, audience and revocation.
+      const decodedToken = await adminAuth.verifyIdToken(
+        idToken,
+        true,
+      );
 
-      logger.info("Firebase ID token verified successfully", {
-        uid: decodedToken.uid,
-        issuer: decodedToken.iss,
-        audience: decodedToken.aud,
-      });
+      const uid = decodedToken.uid;
 
-      const sessionCookie = await adminAuth.createSessionCookie(idToken, {
+      // Retrieve the trusted Firebase user record.
+      const firebaseUser = await adminAuth.getUser(uid);
+
+      if (firebaseUser.disabled) {
+        throw new Error("This account has been disabled");
+      }
+
+      // Ensure the expected authentication provider is linked.
+      const hasExpectedProvider = firebaseUser.providerData.some(
+        (provider) => provider.providerId === expectedProvider,
+      );
+
+      if (!hasExpectedProvider) {
+        throw new Error(
+          `Authentication with ${expectedProvider} is not allowed`,
+        );
+      }
+
+      // Customer authentication does not query ADMIN_USERS.
+      const sessionCookie = await this.createSession(
+        idToken,
         expiresIn,
+      );
+
+      logger.info("Customer authentication successful", {
+        uid,
+        provider: expectedProvider,
       });
 
-      logger.info("Firebase session cookie created successfully", {
-        uid: decodedToken.uid,
-      });
-
-      return sessionCookie;
+      return {
+        uid,
+        sessionCookie,
+        provider: expectedProvider,
+        ...(firebaseUser.phoneNumber
+          ? { phoneNumber: firebaseUser.phoneNumber }
+          : {}),
+        ...(firebaseUser.email
+          ? { email: firebaseUser.email }
+          : {}),
+        ...(firebaseUser.displayName
+          ? { displayName: firebaseUser.displayName }
+          : {}),
+        ...(firebaseUser.photoURL
+          ? { photoURL: firebaseUser.photoURL }
+          : {}),
+      };
     } catch (error) {
-      logger.error("Error creating Firebase session cookie", {
+      logger.error("Customer authentication failed", {
+        provider: expectedProvider,
         error:
           error instanceof Error
             ? {
                 name: error.name,
                 message: error.message,
-                stack: error.stack,
               }
             : error,
       });
@@ -195,88 +279,71 @@ class AuthRepository {
     }
   }
 
-  /**
-   * Verify Firebase session cookie.
-   */
+  // --------------------------------------------------
+  // SESSION MANAGEMENT
+  // --------------------------------------------------
+
+  async createSession(
+    idToken: string,
+    expiresIn = DEFAULT_SESSION_EXPIRY,
+  ): Promise<string> {
+    try {
+      validateSessionExpiry(expiresIn);
+
+      await adminAuth.verifyIdToken(idToken, true);
+
+      return await adminAuth.createSessionCookie(idToken, {
+        expiresIn,
+      });
+    } catch (error) {
+      logger.error("Session creation failed", { error });
+      throw error;
+    }
+  }
+
   async verifySession(sessionCookie: string) {
     try {
-      logger.info("Verifying Firebase session cookie");
-
-      const decodedClaims = await adminAuth.verifySessionCookie(
+      return await adminAuth.verifySessionCookie(
         sessionCookie,
         true,
       );
-
-      logger.debug("Firebase session cookie verified", {
-        uid: decodedClaims.uid,
-      });
-
-      return decodedClaims;
     } catch (error) {
-      logger.error("Error verifying Firebase session cookie", {
-        error,
-      });
-
+      logger.error("Session verification failed", { error });
       throw error;
     }
   }
 
-  /**
-   * Verify Firebase ID token.
-   */
   async verifyIdToken(idToken: string) {
     try {
-      logger.info("Verifying Firebase ID token");
-
-      const decodedToken = await adminAuth.verifyIdToken(idToken, true);
-
-      logger.debug("Firebase ID token verified", {
-        uid: decodedToken.uid,
-      });
-
-      return decodedToken;
+      return await adminAuth.verifyIdToken(idToken, true);
     } catch (error) {
-      logger.error("Error verifying Firebase ID token", {
-        error,
-      });
-
+      logger.error("ID token verification failed", { error });
       throw error;
     }
   }
 
-  /**
-   * Get active admin profile associated with Firebase UID.
-   */
+  // --------------------------------------------------
+  // ADMIN PROFILE
+  // --------------------------------------------------
+
   async getUser(uid: string): Promise<IAdminUser> {
     try {
-      logger.info("Fetching admin user", {
-        uid,
-      });
-
       const user = await firestoreService.getDocument<IAdminUser>(
         COLLECTIONS.ADMIN_USERS,
         uid,
       );
 
       if (!user) {
-        logger.warn("Admin user not found", {
-          uid,
-        });
-
         throw new Error("Admin account not found");
       }
 
       if (!user.isActive) {
-        logger.warn("Admin account is inactive", {
-          uid,
-        });
-
         throw new Error("Admin account is inactive");
       }
 
       return user;
     } catch (error) {
-      logger.error("Error fetching admin user", {
+      logger.error("Admin profile lookup failed", {
         uid,
         error,
       });
@@ -285,26 +352,17 @@ class AuthRepository {
     }
   }
 
-  /**
-   * Logout user by revoking Firebase refresh tokens.
-   */
+  // --------------------------------------------------
+  // LOGOUT
+  // --------------------------------------------------
+
   async logout(uid: string): Promise<void> {
     try {
-      logger.info("Logging out Firebase user", {
-        uid,
-      });
-
       await adminAuth.revokeRefreshTokens(uid);
 
-      logger.info("Firebase refresh tokens revoked", {
-        uid,
-      });
+      logger.info("Firebase refresh tokens revoked", { uid });
     } catch (error) {
-      logger.error("Error logging out Firebase user", {
-        uid,
-        error,
-      });
-
+      logger.error("Logout failed", { uid, error });
       throw error;
     }
   }

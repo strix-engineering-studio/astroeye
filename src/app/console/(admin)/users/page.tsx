@@ -1,4 +1,4 @@
-import UsersPage from "@/features/users/pages/UsersPage";
+import UsersPage from "@/features/customers/pages/UsersPage";
 
 export const metadata = {
   title: "Astroeye - Users",

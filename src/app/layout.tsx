@@ -7,12 +7,12 @@ import {
   Playfair_Display,
 } from "next/font/google";
 
-import { organizationSchema, siteConfig, websiteSchema } from "@/lib/seo";
+import { siteConfig } from "@/lib/seo";
 
 import "./globals.css";
-import { AstroeyeCursor } from "../components/strix-cursor";
 import AppProviders from "@/providers/AppProviders";
 import { cn } from "@/lib/utils";
+import { ensureIAdminUser } from "../lib/firebase/seed-admin";
 
 const playfairDisplayHeading = Playfair_Display({
   subsets: ["latin"],
@@ -122,10 +122,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="relative isolate min-h-screen overflow-x-hidden text-text-primary bg-background"
       >
-        {/* AppProviders sanitizes script tags and provides global context */}
         <AppProviders>{children}</AppProviders>
-
-        <AstroeyeCursor />
       </body>
     </html>
   );

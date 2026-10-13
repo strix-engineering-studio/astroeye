@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { verifySession } from "@/lib/auth/session";
-import { usersRepository } from "@/features/users/repository/user.repository";
+import { usersRepository } from "@/features/customers/repository/user.repository";
 
 export async function PATCH(
   _: Request,

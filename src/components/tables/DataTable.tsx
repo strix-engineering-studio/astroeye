@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 
 // TanStack Table v9+ imports - use create* functions instead of get* functions
 import {
@@ -8,6 +8,11 @@ import {
   SortingState,
   flexRender,
   createCoreRowModel,
+  ColumnDef,
+  OnChangeFn,
+  RowData,
+  RowModel,
+  TableFeatures,
 } from '@tanstack/react-table';
 
 import { AlertCircle, Database, RefreshCw } from 'lucide-react';
@@ -382,3 +387,7 @@ export function DataTable<TData, TValue>({
     </div>
   );
 }
+function ReactTable(arg0: { data: TData[]; columns: ColumnDef<TData, TValue>[]; coreRowModel: (table: Table<TableFeatures, RowData>) => () => RowModel<TableFeatures, RowData>; sortedRowModel: SortingState; filteredRowModel: { [k: string]: string; }; paginationRowModel: (pageIndex: any, pageSize: any) => { first: number | undefined; last: any; previous: number | undefined; next: any; }; manualSorting: boolean; manualFiltering: boolean; manualPagination: boolean; autoResetPageIndex: boolean; pageCount: number | undefined; state: { sorting: SortingState; columnFilters: ColumnFiltersState; pagination: PaginationState; columnVisibility: any; rowSelection: RowSelectionState; }; onSortingChange: OnChangeFn<SortingState>; onColumnFiltersChange: OnChangeFn<ColumnFiltersState>; onPaginationChange: OnChangeFn<PaginationState>; onColumnVisibilityChange: Dispatch<SetStateAction<Record<string, boolean>>>; onRowSelectionChange: OnChangeFn<RowSelectionState>; enableRowSelection: boolean; }) {
+  throw new Error('Function not implemented.');
+}
+
