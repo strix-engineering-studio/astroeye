@@ -1,0 +1,16 @@
+import { apiClient } from "@/lib/api/client";
+import { IAdminUser } from "@/features/admins";
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export const adminAuthService = {
+  login: (data: LoginRequest) =>
+    apiClient.post<IAdminUser>("/auth-admin/login", data),
+
+  logout: () => apiClient.post<void>("/auth-admin/logout", {}),
+
+  getCurrentUser: () => apiClient.get<IAdminUser | null>("/auth-admin/me"),
+};

@@ -412,7 +412,7 @@ export function WebinarCheckoutPage({ webinar }: WebinarCheckoutPageProps) {
                   <Feature
                     icon={<User />}
                     title="Personal registration"
-                    description="Your registration is associated with your Astroeye account."
+                    description="Your registration is associated with your MagicalStones account."
                   />
                 </div>
               </CardContent>

@@ -31,7 +31,7 @@ export default function OpenGraphImage() {
           color: "#9bb3ff",
         }}
       >
-        Astroeye
+        MagicalStones
       </div>
       <div
         style={{
@@ -41,7 +41,7 @@ export default function OpenGraphImage() {
           maxWidth: 920,
         }}
       >
-        Astroeye Product Engineering Studio
+        MagicalStones Product Engineering Studio
       </div>
       <div
         style={{ fontSize: 28, color: "rgba(255,255,255,0.72)", maxWidth: 920 }}

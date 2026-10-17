@@ -83,7 +83,7 @@ export default function SiteFooter() {
           <div className="max-w-md">
             <Link
               href="/"
-              aria-label="Astroeye home"
+              aria-label="MagicalStones home"
               className="group inline-flex items-center gap-3"
             >
               <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#C49A62] font-serif text-3xl text-[#D9B783] transition-colors group-hover:bg-[#C49A62]/10">
@@ -92,7 +92,7 @@ export default function SiteFooter() {
 
               <span>
                 <span className="block font-serif text-3xl tracking-wide text-white">
-                  astroeye
+                  MagicalStones
                 </span>
                 <span className="mt-0.5 block text-[9px] uppercase tracking-[0.28em] text-[#B8A68F]">
                   Your spiritual destination
@@ -172,7 +172,7 @@ export default function SiteFooter() {
       {/* Bottom bar */}
       <div className="border-t border-white/10 bg-[#211E19]">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 text-xs text-[#9E9384] sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
-          <p>© {new Date().getFullYear()} Astroeye. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} MagicalStones. All rights reserved.</p>
 
           <p className="text-[#BEB1A0]">
             Made for a more thoughtful spiritual shopping experience.

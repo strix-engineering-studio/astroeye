@@ -9,8 +9,8 @@ import {
 } from "firebase/auth";
 import { ArrowLeft, LoaderCircle, ShieldCheck } from "lucide-react";
 
-import { auth } from "@/lib/firebase/client";
-import { usePhoneLogin } from "@/features/auth/hooks/use-auth-mutations";
+import { clientAuth } from "@/lib/firebase/client";
+import { usePhoneLogin } from "@/features/auth/hooks/useAuth";
 import { usePhoneAuth } from "@/features/auth/context/phone-auth.context";
 
 import { Button } from "@/components/ui/button";
@@ -129,7 +129,7 @@ export default function VerifyOtp() {
 
       verifierRef.current = verifier;
 
-      const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+      const result = await signInWithPhoneNumber(clientAuth!, phoneNumber, verifier);
 
       setPendingVerification(phoneNumber, result);
       setOtp("");

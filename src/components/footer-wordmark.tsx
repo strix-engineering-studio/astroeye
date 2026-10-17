@@ -326,7 +326,7 @@ export function FooterWordmark() {
                   lg:text-[10vw]
                 "
               >
-                <span className="block">Astroeye</span>
+                <span className="block">MagicalStones</span>
                 <span className="block">Engineering</span>
                 <span className="block">Studio</span>
               </div>
@@ -366,7 +366,7 @@ export function FooterWordmark() {
                 lg:text-[10vw]
               "
             >
-              <span className="block">Astroeye</span>
+              <span className="block">MagicalStones</span>
 
               <span className="block">Engineering</span>
 

@@ -3,26 +3,26 @@ import type { Metadata } from "next";
 import PolicyLayout from "@/components/layout/policy-layout";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Astroeye",
-  description: "Learn how Astroeye collects, uses, and protects personal data.",
+  title: "Privacy Policy | MagicalStones",
+  description: "Learn how MagicalStones collects, uses, and protects personal data.",
 };
 
 export default function PrivacyPolicyPage() {
   return (
     <PolicyLayout
       title="Privacy Policy"
-      description="This policy explains how Astroeye handles personal information when you visit our website or place an order."
+      description="This policy explains how MagicalStones handles personal information when you visit our website or place an order."
       sections={[
         {
           title: "Information We Collect",
           content: (
             <p>
-              Depending on your interactions with Astroeye, we may collect
+              Depending on your interactions with MagicalStones, we may collect
               your name, phone number, email address, shipping address, order
               details, payment status, customer support communications, and
               technical information such as browser and device data.
               Payment card or banking credentials should be handled by the
-              payment provider and not stored directly by Astroeye unless
+              payment provider and not stored directly by MagicalStones unless
               specifically required and appropriately secured.
             </p>
           ),
@@ -106,7 +106,7 @@ export default function PrivacyPolicyPage() {
               Subject to applicable law, you may request access to, correction
               of, or deletion of personal information, or raise concerns about
               its processing. Certain records may need to be retained to meet
-              legal obligations. Contact Astroeye through its official
+              legal obligations. Contact MagicalStones through its official
               published contact details to submit a request.
             </p>
           ),
@@ -115,7 +115,7 @@ export default function PrivacyPolicyPage() {
           title: "Children's Privacy",
           content: (
             <p>
-              Astroeye is not intended to collect children's personal
+              MagicalStones is not intended to collect children's personal
               information unlawfully. Where applicable law requires parental
               consent or additional safeguards, those requirements must be
               followed.

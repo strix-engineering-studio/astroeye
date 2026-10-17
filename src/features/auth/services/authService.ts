@@ -1,5 +1,4 @@
 import { apiClient } from "@/lib/api/client";
-import type { IAdminUser } from "@/features/admins";
 import {
   LoginRequest,
   CustomerAuthRequest,
@@ -17,7 +16,7 @@ export const authService = {
    * The backend validates the admin profile.
    */
   login: (data: LoginRequest) =>
-    apiClient.post<IAdminUser>("/auth/login", data),
+    apiClient.post<CustomerAuthUser>("/auth/login", data),
 
   /**
    * Customer signup/login using Google.
@@ -44,5 +43,5 @@ export const authService = {
    * Retrieve the currently authenticated user.
    */
   getCurrentUser: () =>
-    apiClient.get<IAdminUser | CustomerAuthUser | null>("/auth/me"),
+    apiClient.get<CustomerAuthUser | null>("/auth/me"),
 };

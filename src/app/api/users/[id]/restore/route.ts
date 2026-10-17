@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { verifySession } from "@/lib/auth/session";
+import { getAdminSession } from "@/lib/admin-auth";
 import { usersRepository } from "@/features/customers/repository/user.repository";
 
 export async function PATCH(
   _: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifySession();
+  const session = await getAdminSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

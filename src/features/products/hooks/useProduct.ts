@@ -12,10 +12,14 @@ import {
   UpdateProductData,
 } from "../types/product.type";
 
-export const useProductsQuery = () => {
+export const useProductsQuery = (options?: {
+  all?: boolean;
+  categoryId?: string;
+  search?: string;
+}) => {
   return useQuery({
-    queryKey: [COLLECTIONS.PRODUCTS],
-    queryFn: () => productsService.fetchProducts(),
+    queryKey: [COLLECTIONS.PRODUCTS, options],
+    queryFn: () => productsService.fetchProducts(options),
   });
 };
 

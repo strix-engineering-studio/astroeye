@@ -3,7 +3,7 @@
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { COLLECTIONS } from "../constants/COLLECTIONS";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@astroeye.in";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@MagicalStones.in";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin@123";
 
 export async function ensureIAdminUser() {

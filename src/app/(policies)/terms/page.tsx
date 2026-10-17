@@ -2,31 +2,31 @@ import type { Metadata } from "next";
 import PolicyLayout from "@/components/layout/policy-layout";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | Astroeye",
-  description: "Terms governing the use of the Astroeye online store.",
+  title: "Terms and Conditions | MagicalStones",
+  description: "Terms governing the use of the MagicalStones online store.",
 };
 
 export default function TermsAndConditionsPage() {
   return (
     <PolicyLayout
       title="Terms and Conditions"
-      description="Please read these terms carefully before using Astroeye or placing an order."
+      description="Please read these terms carefully before using MagicalStones or placing an order."
       sections={[
         {
           title: "Acceptance of Terms",
           content: (
             <p>
-              By accessing or using Astroeye, you agree to these Terms and
+              By accessing or using MagicalStones, you agree to these Terms and
               Conditions and applicable laws. If you do not agree, please
               discontinue using the website.
             </p>
           ),
         },
         {
-          title: "About Astroeye",
+          title: "About MagicalStones",
           content: (
             <p>
-              Astroeye is an online storefront offering products for purchase.
+              MagicalStones is an online storefront offering products for purchase.
               The legal business name, registered address, and contact details
               must be published here before these terms are finalized.
             </p>
@@ -84,7 +84,7 @@ export default function TermsAndConditionsPage() {
           content: (
             <p>
               Website content, branding, graphics, text, and other materials are
-              owned by Astroeye or their respective rights holders unless
+              owned by MagicalStones or their respective rights holders unless
               otherwise stated. They may not be reproduced or used commercially
               without the necessary authorization.
             </p>
@@ -120,7 +120,7 @@ export default function TermsAndConditionsPage() {
               applicable consumer protection requirements. Any jurisdiction
               provision must be finalized based on the business's actual
               registered location and applicable law. For questions, contact
-              Astroeye using the official contact details on the website.
+              MagicalStones using the official contact details on the website.
             </p>
           ),
         },

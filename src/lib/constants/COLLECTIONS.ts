@@ -59,4 +59,7 @@ export const COLLECTIONS = {
   EXPERT_REQUESTS: "expert_requests",
   ORDERS: "orders",
   COUPONS: "coupons",
+  PRODUCTS: "products",
+  PAYMENTS: "payments",
+  PURCHASES: "purchases",
 } as const;

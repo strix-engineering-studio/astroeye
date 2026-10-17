@@ -1,112 +1,77 @@
-import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { authRepository } from "@/features/auth-admin/repository/auth.repository";
 
 export const ADMIN_SESSION_COOKIE = "strix_admin_session";
-const ADMIN_SESSION_TTL_MS = 1000 * 60 * 60 * 12;
 
-type AdminSession = {
+export const ADMIN_SESSION_TTL_MS = 1000 * 60 * 60 * 12;
+
+export interface AdminSession {
+  uid: string;
   email: string;
   expiresAt: number;
-};
-
-function getAdminEmail() {
-  return process.env.ADMIN_EMAIL ?? "";
 }
 
-function getAdminPassword() {
-  return process.env.ADMIN_PASSWORD ?? "";
-}
+export async function getAdminSession(): Promise<AdminSession | null> {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
 
-function getSessionSecret() {
-  return process.env.ADMIN_SESSION_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
-}
-
-function base64UrlEncode(value: string) {
-  return Buffer.from(value).toString("base64url");
-}
-
-function base64UrlDecode(value: string) {
-  return Buffer.from(value, "base64url").toString("utf8");
-}
-
-function signPayload(payload: string) {
-  const secret = getSessionSecret();
-  return createHmac("sha256", secret).update(payload).digest("base64url");
-}
-
-export function isValidAdminCredentials(email: string, password: string) {
-  return email === getAdminEmail() && password === getAdminPassword();
-}
-
-export function createAdminSessionToken(email: string) {
-  const session: AdminSession = {
-    email,
-    expiresAt: Date.now() + ADMIN_SESSION_TTL_MS,
-  };
-
-  const payload = base64UrlEncode(JSON.stringify(session));
-  const signature = signPayload(payload);
-  return `${payload}.${signature}`;
-}
-
-export function verifyAdminSessionToken(token?: string) {
-  if (!token) return null;
-  const secret = getSessionSecret();
-  if (!secret) return null;
-
-  const [payload, signature] = token.split(".");
-  if (!payload || !signature) return null;
-
-  const expectedSignature = signPayload(payload);
-  const provided = Buffer.from(signature);
-  const expected = Buffer.from(expectedSignature);
-  if (
-    provided.length !== expected.length ||
-    !timingSafeEqual(provided, expected)
-  )
+  if (!sessionCookie) {
     return null;
+  }
 
   try {
-    const session = JSON.parse(base64UrlDecode(payload)) as AdminSession;
-    if (!session.email || session.expiresAt < Date.now()) return null;
-    if (session.email !== getAdminEmail()) return null;
-    return session;
+    // Verify the Firebase session and check whether it has been revoked.
+    const decodedClaims =
+      await authRepository.verifySession(sessionCookie);
+
+    if (!decodedClaims.uid || !decodedClaims.email) {
+      return null;
+    }
+
+    // Verify that this Firebase account is an active admin.
+    await authRepository.getUser(decodedClaims.uid);
+
+    return {
+      uid: decodedClaims.uid,
+      email: decodedClaims.email,
+      expiresAt: decodedClaims.exp * 1000,
+    };
   } catch {
+    // Invalid, expired, revoked, or unauthorized sessions are rejected.
     return null;
   }
 }
 
-export async function getAdminSession() {
+export async function setAdminSessionCookie(
+  sessionCookie: string,
+): Promise<void> {
   const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
-  return verifyAdminSessionToken(token);
-}
 
-export async function setAdminSessionCookie(email: string) {
-  const cookieStore = await cookies();
-  cookieStore.set(ADMIN_SESSION_COOKIE, createAdminSessionToken(email), {
+  cookieStore.set(ADMIN_SESSION_COOKIE, sessionCookie, {
     httpOnly: true,
-    sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     path: "/",
     maxAge: ADMIN_SESSION_TTL_MS / 1000,
   });
 }
 
-export async function clearAdminSessionCookie() {
+export async function clearAdminSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
+
   cookieStore.set(ADMIN_SESSION_COOKIE, "", {
     httpOnly: true,
-    sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     path: "/",
     maxAge: 0,
   });
 }
 
-export async function requireAdminSession() {
+export async function requireAdminSession(): Promise<AdminSession> {
   const session = await getAdminSession();
+
   if (!session) {
     redirect("/console/login");
   }

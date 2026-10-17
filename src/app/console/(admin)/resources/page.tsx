@@ -1,7 +1,7 @@
 import ResourcesPage from "@/features/resources/pages/ResourcesPage";
 
 export const metadata = {
-  title: "Astroeye - Resources",
+  title: "MagicalStones - Resources",
   description: "Admin dashboard for managing the application",
 };
 

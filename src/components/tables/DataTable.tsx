@@ -1,67 +1,81 @@
-import { Dispatch, SetStateAction, useState } from 'react';
 
-// TanStack Table v9+ imports - use create* functions instead of get* functions
+"use client";
+
+import { useState } from "react";
+
 import {
-  ColumnFiltersState,
-  PaginationState,
-  RowSelectionState,
-  SortingState,
   flexRender,
-  createCoreRowModel,
-  ColumnDef,
-  OnChangeFn,
-  RowData,
-  RowModel,
-  TableFeatures,
-} from '@tanstack/react-table';
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnFiltersState,
+  type PaginationState,
+  type RowSelectionState,
+  type SortingState,
+} from "@tanstack/react-table";
 
-import { AlertCircle, Database, RefreshCw } from 'lucide-react';
+import { AlertCircle, Database, RefreshCw } from "lucide-react";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 
-import { Spinner } from '../ui/spinner';
+import { Spinner } from "../ui/spinner";
 
-import { DataTableToolbar, DataTableFilter } from './DataTableToolbar';
+import {
+  DataTableToolbar,
+  type DataTableFilter,
+} from "./DataTableToolbar";
 
-import { DataTablePagination } from './DataTablePagination';
+import { DataTablePagination } from "./DataTablePagination";
+import { DataTableSortIcon } from "./DataTableSortIcon";
 
-import { DataTableSortIcon } from './DataTableSortIcon';
+import type { DataTableProps } from "@/types/datatable.types";
 
-import { DataTableProps } from '@/types/datatable.types';
+type DataTableExtendedProps<TData, TValue> = DataTableProps<
+  TData,
+  TValue
+> & {
+  filterOptions?: DataTableFilter[];
+  searchMaxLength?: number;
+  searchPattern?: RegExp;
+  error?: Error | string | boolean | null;
+  onRetry?: () => void;
+  errorMessage?: string;
+};
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-
   loading = false,
 
-  // Error
   error = null,
   onRetry,
-  errorMessage = 'Something went wrong while loading the data.',
+  errorMessage = "Something went wrong while loading the data.",
 
-  // Search
   search,
   searchKey,
   onSearchChange,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder = "Search...",
   manualSearch = false,
-
-  // Search validation
   searchMaxLength,
   searchPattern,
 
-  // Sorting
   sorting,
   onSortingChange,
   manualSorting = false,
 
-  // Filtering
   filters,
   onFiltersChange,
   manualFiltering = false,
 
-  // Pagination
   pagination,
   onPaginationChange,
   manualPagination = false,
@@ -69,142 +83,109 @@ export function DataTable<TData, TValue>({
   totalRows,
   pageCount,
 
-  // Column visibility
   columnVisibility,
   onColumnVisibilityChange,
 
-  // Row selection
   rowSelection,
   onRowSelectionChange,
 
-  // Features
   enableSearch = true,
   enableSorting = true,
   enableFiltering = true,
   enablePagination = true,
-  enableColumnVisibility = true,
   enableRowSelection = false,
 
-  enableExportExcel = false,
-  enableRefresh = false,
-
-  onExportExcel,
-  onRefresh,
-
   toolbar,
-
   filterOptions = [],
 
   emptyIcon = <Database />,
-  emptyMessage = 'No records found.',
+  emptyMessage = "No records found.",
 
   onRowClick,
-}: DataTableProps<TData, TValue> & {
-  filterOptions?: DataTableFilter[];
-
-  /**
-   * Optional search validation.
-   */
-  searchMaxLength?: number;
-  searchPattern?: RegExp;
-
-  /**
-   * Optional error state.
-   *
-   * Pass an Error object, string, or true.
-   */
-  error?: Error | string | boolean | null;
-
-  /**
-   * Optional retry handler.
-   *
-   * If provided, a Retry button will be shown.
-   */
-  onRetry?: () => void;
-
-  /**
-   * Message shown when the table is in an error state.
-   */
-  errorMessage?: string;
-}) {
+}: DataTableExtendedProps<TData, TValue>) {
   /*
-   * -------------------------------------------------------
    * Internal state
-   * -------------------------------------------------------
    */
 
-  const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] =
+    useState<SortingState>([]);
 
-  const [internalFilters, setInternalFilters] = useState<ColumnFiltersState>([]);
+  const [internalFilters, setInternalFilters] =
+    useState<ColumnFiltersState>([]);
 
-  const [internalPagination, setInternalPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: pagination?.pageSize ?? 10,
-  });
+  const [internalPagination, setInternalPagination] =
+    useState<PaginationState>({
+      pageIndex: 0,
+      pageSize: pagination?.pageSize ?? 10,
+    });
 
-  const [internalVisibility, setInternalVisibility] = useState<Record<string, boolean>>({});
+  const [internalVisibility, setInternalVisibility] =
+    useState<Record<string, boolean>>({});
 
-  const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
+  const [internalRowSelection, setInternalRowSelection] =
+    useState<RowSelectionState>({});
 
   /*
-   * -------------------------------------------------------
    * Controlled / uncontrolled state
-   * -------------------------------------------------------
    */
 
   const sortingState = sorting ?? internalSorting;
-
   const filterState = filters ?? internalFilters;
-
   const paginationState = pagination ?? internalPagination;
-
   const visibilityState = columnVisibility ?? internalVisibility;
-
   const rowSelectionState = rowSelection ?? internalRowSelection;
 
-  const filterValues = Object.fromEntries(filterState.map(({ id, value }) => [id, String(value)]));
+  const filterValues = Object.fromEntries(
+    filterState.map(({ id, value }) => [id, String(value)]),
+  );
 
-  const handleFilterChange = (key: string, value: string | undefined) => {
-    const nextFilters = filterState.filter((filter) => filter.id !== key);
+  const handleFilterChange = (
+    key: string,
+    value: string | undefined,
+  ) => {
+    const nextFilters = filterState.filter(
+      (filter) => filter.id !== key,
+    );
 
-    if (value !== undefined) {
+    if (value !== undefined && value !== "") {
       nextFilters.push({
         id: key,
         value,
       });
     }
 
-    const updater = nextFilters as ColumnFiltersState;
-
     if (onFiltersChange) {
-      onFiltersChange(updater);
+      onFiltersChange(nextFilters);
     } else {
-      setInternalFilters(updater);
+      setInternalFilters(nextFilters);
+    }
+
+    // Return to the first page when a filter changes.
+    if (onPaginationChange) {
+      onPaginationChange((previous) => ({
+        ...previous,
+        pageIndex: 0,
+      }));
+    } else {
+      setInternalPagination((previous) => ({
+        ...previous,
+        pageIndex: 0,
+      }));
     }
   };
 
   /*
-   * -------------------------------------------------------
-   * React Table
-   * -------------------------------------------------------
+   * TanStack Table
    */
 
-  const table = ReactTable({
+  const table = useReactTable({
     data,
     columns,
 
-    coreRowModel: createCoreRowModel(),
-
-    sortedRowModel: manualSorting ? [] : sortingState,
-
-    filteredRowModel: filterValues,
-
-    paginationRowModel: (pageIndex, pageSize) => ({
-      first: pageIndex === 0 ? undefined : pageIndex - 1,
-      last: pageIndex + 1,
-      previous: pageIndex === 0 ? undefined : pageIndex - 1,
-      next: pageIndex + 1 >= pageCount ? undefined : pageIndex + 1,
-    }),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
 
     manualSorting,
     manualFiltering,
@@ -212,7 +193,9 @@ export function DataTable<TData, TValue>({
 
     autoResetPageIndex: false,
 
-    pageCount: manualPagination ? pageCount : undefined,
+    ...(manualPagination && pageCount !== undefined
+      ? { pageCount }
+      : {}),
 
     state: {
       sorting: sortingState,
@@ -222,23 +205,27 @@ export function DataTable<TData, TValue>({
       rowSelection: rowSelectionState,
     },
 
-    onSortingChange: onSortingChange ?? setInternalSorting,
+    onSortingChange:
+      onSortingChange ?? setInternalSorting,
 
-    onColumnFiltersChange: onFiltersChange ?? setInternalFilters,
+    onColumnFiltersChange:
+      onFiltersChange ?? setInternalFilters,
 
-    onPaginationChange: onPaginationChange ?? setInternalPagination,
+    onPaginationChange:
+      onPaginationChange ?? setInternalPagination,
 
-    onColumnVisibilityChange: onColumnVisibilityChange ?? setInternalVisibility,
+    onColumnVisibilityChange:
+      onColumnVisibilityChange ?? setInternalVisibility,
 
-    onRowSelectionChange: onRowSelectionChange ?? setInternalRowSelection,
+    onRowSelectionChange:
+      onRowSelectionChange ?? setInternalRowSelection,
 
+    enableSorting,
     enableRowSelection,
   });
 
   /*
-   * -------------------------------------------------------
    * Loading state
-   * -------------------------------------------------------
    */
 
   if (loading) {
@@ -250,14 +237,16 @@ export function DataTable<TData, TValue>({
   }
 
   /*
-   * -------------------------------------------------------
    * Error state
-   * -------------------------------------------------------
    */
 
   if (error) {
     const message =
-      typeof error === 'string' ? error : error instanceof Error ? error.message : errorMessage;
+      typeof error === "string"
+        ? error
+        : error instanceof Error
+          ? error.message
+          : errorMessage;
 
     return (
       <div className="bg-card my-5 flex min-h-80 items-center justify-center rounded-xl border">
@@ -266,9 +255,13 @@ export function DataTable<TData, TValue>({
             <AlertCircle className="h-6 w-6" />
           </div>
 
-          <h3 className="text-foreground text-base font-semibold">Unable to load data</h3>
+          <h3 className="text-foreground text-base font-semibold">
+            Unable to load data
+          </h3>
 
-          <p className="text-muted-foreground mt-2 text-sm">{message}</p>
+          <p className="text-muted-foreground mt-2 text-sm">
+            {message}
+          </p>
 
           {onRetry && (
             <button
@@ -286,9 +279,7 @@ export function DataTable<TData, TValue>({
   }
 
   /*
-   * -------------------------------------------------------
    * Render
-   * -------------------------------------------------------
    */
 
   return (
@@ -317,20 +308,34 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
-                  const canSort = enableSorting && header.column.getCanSort();
+                  const canSort =
+                    enableSorting && header.column.getCanSort();
 
                   return (
                     <TableHead
                       key={header.id}
-                      className={canSort ? 'cursor-pointer select-none' : ''}
-                      onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                      className={
+                        canSort
+                          ? "cursor-pointer select-none"
+                          : ""
+                      }
+                      onClick={
+                        canSort
+                          ? header.column.getToggleSortingHandler()
+                          : undefined
+                      }
                     >
                       {header.isPlaceholder ? null : (
                         <div className="flex items-center gap-2">
-                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
 
-                          {header.column.getCanSort() && (
-                            <DataTableSortIcon direction={header.column.getIsSorted()} />
+                          {canSort && (
+                            <DataTableSortIcon
+                              direction={header.column.getIsSorted()}
+                            />
                           )}
                         </div>
                       )}
@@ -346,12 +351,23 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                  className={onRowClick ? 'hover:bg-muted/50 cursor-pointer' : undefined}
+                  onClick={
+                    onRowClick
+                      ? () => onRowClick(row.original)
+                      : undefined
+                  }
+                  className={
+                    onRowClick
+                      ? "hover:bg-muted/50 cursor-pointer"
+                      : undefined
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -368,7 +384,9 @@ export function DataTable<TData, TValue>({
                     </div>
                   )}
 
-                  <p className="text-muted-foreground text-sm">{emptyMessage}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {emptyMessage}
+                  </p>
                 </TableCell>
               </TableRow>
             )}
@@ -387,7 +405,3 @@ export function DataTable<TData, TValue>({
     </div>
   );
 }
-function ReactTable(arg0: { data: TData[]; columns: ColumnDef<TData, TValue>[]; coreRowModel: (table: Table<TableFeatures, RowData>) => () => RowModel<TableFeatures, RowData>; sortedRowModel: SortingState; filteredRowModel: { [k: string]: string; }; paginationRowModel: (pageIndex: any, pageSize: any) => { first: number | undefined; last: any; previous: number | undefined; next: any; }; manualSorting: boolean; manualFiltering: boolean; manualPagination: boolean; autoResetPageIndex: boolean; pageCount: number | undefined; state: { sorting: SortingState; columnFilters: ColumnFiltersState; pagination: PaginationState; columnVisibility: any; rowSelection: RowSelectionState; }; onSortingChange: OnChangeFn<SortingState>; onColumnFiltersChange: OnChangeFn<ColumnFiltersState>; onPaginationChange: OnChangeFn<PaginationState>; onColumnVisibilityChange: Dispatch<SetStateAction<Record<string, boolean>>>; onRowSelectionChange: OnChangeFn<RowSelectionState>; enableRowSelection: boolean; }) {
-  throw new Error('Function not implemented.');
-}
-

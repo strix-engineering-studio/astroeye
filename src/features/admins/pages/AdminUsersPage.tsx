@@ -195,7 +195,7 @@ export const AdminUsersPage: React.FC = () => {
               </span>
               ?<span className="mt-1 block">This action cannot be undone.</span>
             </>
-          ) : null
+          ) : <div></div>
         }
         confirmText="Delete Admin"
         onConfirm={handleConfirmDelete}

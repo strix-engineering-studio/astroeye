@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Astroeye | Product Engineering Studio",
-    short_name: "Astroeye",
+    name: "MagicalStones | Product Engineering Studio",
+    short_name: "MagicalStones",
     description:
       "Product engineering studio for software products, backend systems, mobile experiences, and AI-enabled workflows.",
     start_url: "/",

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import PolicyLayout from "@/components/layout/policy-layout";
 
 export const metadata: Metadata = {
-  title: "Shipping Policy | Astroeye",
-  description: "Learn about Astroeye order processing, shipping, and delivery.",
+  title: "Shipping Policy | MagicalStones",
+  description: "Learn about MagicalStones order processing, shipping, and delivery.",
 };
 
 export default function ShippingPolicyPage() {
@@ -52,7 +52,7 @@ export default function ShippingPolicyPage() {
             <p>
               Estimated delivery dates are indicative and may be affected by
               courier capacity, weather, public holidays, regional disruptions,
-              or other circumstances outside our reasonable control. Astroeye
+              or other circumstances outside our reasonable control. MagicalStones
               should publish realistic delivery estimates based on its shipping
               aggregator and fulfilment arrangements.
             </p>
@@ -75,7 +75,7 @@ export default function ShippingPolicyPage() {
             <p>
               Customers are responsible for providing accurate delivery details.
               An incorrect or incomplete address may delay delivery or result in
-              a failed delivery attempt. Contact Astroeye promptly if you
+              a failed delivery attempt. Contact MagicalStones promptly if you
               identify an address error; changes may not be possible once a
               shipment has been dispatched.
             </p>
@@ -86,7 +86,7 @@ export default function ShippingPolicyPage() {
           content: (
             <p>
               If a delivery attempt fails or a package arrives visibly damaged,
-              contact Astroeye using the official support details. Provide the
+              contact MagicalStones using the official support details. Provide the
               order reference and relevant photographs where appropriate.
               Resolution will depend on the circumstances, shipping records,
               product condition, and applicable law.
@@ -98,7 +98,7 @@ export default function ShippingPolicyPage() {
           content: (
             <p>
               If a shipment exceeds its communicated delivery estimate, contact
-              Astroeye with your order number. We will review the available
+              MagicalStones with your order number. We will review the available
               tracking information and coordinate with the delivery partner
               where necessary. Applicable consumer rights and remedies remain
               unaffected.

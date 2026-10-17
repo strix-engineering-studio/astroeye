@@ -23,7 +23,7 @@ export default function PolicyLayout({
       <section className="border-b bg-muted/30">
         <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <p className="mb-3 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            Astroeye Policies
+            MagicalStones Policies
           </p>
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -76,7 +76,7 @@ export default function PolicyLayout({
             ))}
 
             <div className="border-t pt-6 text-sm text-muted-foreground">
-              Questions about this policy? Contact Astroeye through the contact
+              Questions about this policy? Contact MagicalStones through the contact
               details published on our website.
             </div>
           </article>

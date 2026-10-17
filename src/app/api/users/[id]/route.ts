@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { verifySession } from "@/lib/auth/session";
+import { getAdminSession } from "@/lib/admin-auth";
 import { usersRepository } from "@/features/customers/repository/user.repository";
 import { editUserSchema } from "@/features/customers/schemas";
 import { ZodError } from "zod";
@@ -9,15 +10,17 @@ export async function GET(
   _: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifySession();
+  const { id } = await context.params;
 
-  if (!session) {
+  const adminSession = await getAdminSession();
+  const customerUid = adminSession ? null : await verifySession();
+
+  // Scoped to authorized administrator or customer accessing own profile
+  if (!adminSession && customerUid !== id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { id } = await context.params;
-
     const user = await usersRepository.findById(id);
 
     if (!user) {
@@ -36,15 +39,26 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifySession();
+  const { id } = await context.params;
 
-  if (!session) {
+  const adminSession = await getAdminSession();
+  const customerUid = adminSession ? null : await verifySession();
+
+  if (!adminSession && customerUid !== id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { id } = await context.params;
     const payload = await request.json();
+
+    // If customer updating own profile, restrict to non-privileged fields
+    if (!adminSession) {
+      delete payload.membershipType;
+      delete payload.isActive;
+      delete payload.isExpert;
+      delete payload.isDeleted;
+    }
+
     let data = editUserSchema.parse(payload);
 
     if (
@@ -113,9 +127,9 @@ export async function DELETE(
   _: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifySession();
+  const adminSession = await getAdminSession();
 
-  if (!session) {
+  if (!adminSession) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -124,7 +138,7 @@ export async function DELETE(
 
     await usersRepository.softDelete(
       id,
-      session, // or session.user.uid depending on your session object
+      adminSession.uid,
     );
 
     return NextResponse.json({

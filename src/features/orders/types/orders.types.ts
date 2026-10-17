@@ -7,8 +7,9 @@ import { OrderStatus } from "./orders.enums";
 export interface Order {
   id: string;
   userId: string;
-  resourceId: string;
-  creatorId: string;
+  resourceId?: string;
+  productId?: string;
+  creatorId?: string;
   title: string;
   amount: number;
   currency: string;

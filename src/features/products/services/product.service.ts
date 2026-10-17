@@ -7,8 +7,18 @@ import {
 } from "../types/product.type";
 
 export const productsService = {
-  async fetchProducts() {
-    return apiClient.get<Product[]>("/products");
+  async fetchProducts(options?: {
+    all?: boolean;
+    categoryId?: string;
+    search?: string;
+  }) {
+    const params = new URLSearchParams();
+    if (options?.all) params.set("all", "true");
+    if (options?.categoryId) params.set("categoryId", options.categoryId);
+    if (options?.search) params.set("search", options.search);
+
+    const qs = params.toString();
+    return apiClient.get<Product[]>(`/products${qs ? `?${qs}` : ""}`);
   },
 
   async fetchProductById(id: string) {
@@ -17,17 +27,17 @@ export const productsService = {
 
   async fetchProductsByCategoryId(categoryId: string) {
     return apiClient.get<Product[]>(
-      `/products/category/${encodeURIComponent(categoryId)}`,
+      `/products?categoryId=${encodeURIComponent(categoryId)}`,
     );
   },
 
   async fetchProductByName(name: string) {
-    return apiClient.get<Product>(`/products/name/${encodeURIComponent(name)}`);
+    return apiClient.get<Product>(`/products?search=${encodeURIComponent(name)}`);
   },
 
   async searchProducts(searchTerm: string) {
     return apiClient.get<Product[]>(
-      `/products/search?q=${encodeURIComponent(searchTerm)}`,
+      `/products?search=${encodeURIComponent(searchTerm)}`,
     );
   },
 

@@ -1,21 +1,19 @@
 "use client";
 
-import React, { createContext, useContext, useEffect } from "react";
-
-import { IAdminUser } from "@/features/admins";
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from "react";
 import { authService } from "@/features/auth/services/authService";
-import { useAuthStore } from "../lib/store/authStore";
+import { useAuthStore } from "@/lib/store/authStore";
+import type { CustomerAuthUser } from "@/features/auth/types/auth.types";
 
-export interface AuthContextType {
-  user: IAdminUser | null;
+export interface CustomerAuthContextType {
+  user: CustomerAuthUser | null;
   isLoading: boolean;
-
-  login: (email: string, password: string) => Promise<IAdminUser>;
+  isAuthenticated: boolean;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -24,47 +22,45 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const { user, isLoading, setUser, setLoading } = useAuthStore();
 
+  const refreshUser = useCallback(async (): Promise<void> => {
+    try {
+      const currentUser = await authService.getCurrentUser();
+      setUser(currentUser);
+    } catch {
+      setUser(null);
+    }
+  }, [setUser]);
+
   useEffect(() => {
+    let isMounted = true;
+
     const initializeAuth = async () => {
       setLoading(true);
 
       try {
         const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
+        if (isMounted) {
+          setUser(currentUser);
+        }
       } catch {
-        setUser(null);
+        if (isMounted) {
+          setUser(null);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    initializeAuth();
+    void initializeAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [setLoading, setUser]);
 
-  const login = async (
-    email: string,
-    password: string,
-  ): Promise<IAdminUser> => {
-    setLoading(true);
-
-    try {
-      const adminUser = await authService.login({
-        email,
-        password,
-      });
-
-      setUser(adminUser);
-
-      return adminUser;
-    } catch (error) {
-      setUser(null);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = async (): Promise<void> => {
+  const logout = useCallback(async (): Promise<void> => {
     setLoading(true);
 
     try {
@@ -73,34 +69,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setUser]);
 
-  const refreshUser = async (): Promise<void> => {
-    try {
-      const currentUser = await authService.getCurrentUser();
-      setUser(currentUser);
-    } catch {
-      setUser(null);
-    }
-  };
+  const value = useMemo<CustomerAuthContextType>(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: Boolean(user),
+      logout,
+      refreshUser,
+    }),
+    [user, isLoading, logout, refreshUser],
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        login,
-        logout,
-        refreshUser,
-      }}
-    >
+    <CustomerAuthContext.Provider value={value}>
       {children}
-    </AuthContext.Provider>
+    </CustomerAuthContext.Provider>
   );
 }
 
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
+export function useAuth(): CustomerAuthContextType {
+  const context = useContext(CustomerAuthContext);
 
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");

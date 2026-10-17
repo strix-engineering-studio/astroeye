@@ -108,7 +108,7 @@ export default function Login() {
 
       setPendingVerification(normalizedPhone, confirmationResult);
 
-      router.push("/verify-phone");
+      router.push("/verify");
     } catch (err) {
       setError(
         err instanceof Error
@@ -135,7 +135,7 @@ export default function Login() {
 
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
-              Welcome to Astroeye
+              Welcome to MagicalStones
             </h1>
             <p className="text-sm text-stone-500">
               Sign in to continue your spiritual journey.

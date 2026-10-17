@@ -280,7 +280,7 @@ export const experienceTimeline: TimelineItem[] = [
 export const testimonials: Testimonial[] = [
   {
     quote:
-      "Astroeye understood the operational problem quickly and turned it into a system we could actually run every day.",
+      "MagicalStones understood the operational problem quickly and turned it into a system we could actually run every day.",
     name: "Aarav Mehta",
     role: "Founder",
     company: "Seed-stage SaaS",

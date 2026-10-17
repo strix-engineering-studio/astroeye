@@ -38,4 +38,10 @@ export const QUERY_KEYS = {
   REPORTS: "reports",
 
   AUDIT_LOGS: "audit_logs",
+
+  PRODUCTS: "products",
+
+  PAYMENTS: "payments",
+
+  ORDERS: "orders",
 } as const;

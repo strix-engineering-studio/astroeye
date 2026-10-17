@@ -6,7 +6,7 @@ export type AuthorityContent = {
   whoIsItFor: string;
   whatProblemDoesItSolve: string;
   howDoesItWork: string;
-  whyChooseAstroeye: string;
+  whyChooseMagicalStones: string;
   related: { label: string; href: string }[];
   faqs: { question: string; answer: string }[];
 };
@@ -16,7 +16,7 @@ export const authorityPages: AuthorityContent[] = [
     slug: "process",
     title: "Engineering Process",
     description:
-      "How Astroeye designs, validates, and ships production systems with architecture first.",
+      "How MagicalStones designs, validates, and ships production systems with architecture first.",
     whatIsThis:
       "A delivery model that starts with system boundaries, workflows, and operating constraints before UI implementation.",
     whoIsItFor:
@@ -25,8 +25,8 @@ export const authorityPages: AuthorityContent[] = [
       "It reduces rework by aligning product scope, architecture, and implementation before execution starts.",
     howDoesItWork:
       "Discovery, architecture mapping, technical decisions, scoped implementation, validation, and long-term support.",
-    whyChooseAstroeye:
-      "Astroeye focuses on systems that stay maintainable after launch, not just code that looks good on day one.",
+    whyChooseMagicalStones:
+      "MagicalStones focuses on systems that stay maintainable after launch, not just code that looks good on day one.",
     related: [
       { label: "Capabilities", href: "/capabilities" },
       { label: "Systems", href: "/systems" },
@@ -35,9 +35,9 @@ export const authorityPages: AuthorityContent[] = [
     ],
     faqs: [
       {
-        question: "What is Astroeye's engineering process?",
+        question: "What is MagicalStones's engineering process?",
         answer:
-          "Astroeye starts with discovery and architecture, then moves into scoped implementation, validation, and support.",
+          "MagicalStones starts with discovery and architecture, then moves into scoped implementation, validation, and support.",
       },
       {
         question: "Why is process important in product engineering?",
@@ -50,7 +50,7 @@ export const authorityPages: AuthorityContent[] = [
     slug: "engineering-principles",
     title: "Engineering Principles",
     description:
-      "The rules Astroeye uses to keep product systems durable, understandable, and easy to evolve.",
+      "The rules MagicalStones uses to keep product systems durable, understandable, and easy to evolve.",
     whatIsThis:
       "A concise set of system-design principles that shape delivery decisions.",
     whoIsItFor:
@@ -59,7 +59,7 @@ export const authorityPages: AuthorityContent[] = [
       "It prevents teams from optimizing for speed in ways that make the product fragile.",
     howDoesItWork:
       "Use domain boundaries, explicit contracts, observable behavior, and progressive simplification.",
-    whyChooseAstroeye:
+    whyChooseMagicalStones:
       "The studio is organized around operational clarity and maintainability, not temporary output volume.",
     related: [
       { label: "Architecture Philosophy", href: "/architecture-philosophy" },
@@ -73,9 +73,9 @@ export const authorityPages: AuthorityContent[] = [
           "It means designing the operating model and architecture before deciding the implementation details.",
       },
       {
-        question: "How is Astroeye different from an agency?",
+        question: "How is MagicalStones different from an agency?",
         answer:
-          "Astroeye focuses on systems, long-term maintainability, and architecture decisions rather than generic production hours.",
+          "MagicalStones focuses on systems, long-term maintainability, and architecture decisions rather than generic production hours.",
       },
     ],
   },
@@ -83,7 +83,7 @@ export const authorityPages: AuthorityContent[] = [
     slug: "architecture-philosophy",
     title: "Architecture Philosophy",
     description:
-      "Why Astroeye believes architecture is the product's operating system, not a documentation exercise.",
+      "Why MagicalStones believes architecture is the product's operating system, not a documentation exercise.",
     whatIsThis:
       "A practical philosophy for building production-grade systems that can change without collapsing.",
     whoIsItFor:
@@ -92,7 +92,7 @@ export const authorityPages: AuthorityContent[] = [
       "It avoids the common failure mode where a product is easy to launch but hard to evolve.",
     howDoesItWork:
       "Clarify boundaries, model data carefully, isolate workflows, and design for operational visibility.",
-    whyChooseAstroeye:
+    whyChooseMagicalStones:
       "The studio pairs product thinking with architecture discipline, which lowers delivery and maintenance risk.",
     related: [
       { label: "Process", href: "/process" },
@@ -106,7 +106,7 @@ export const authorityPages: AuthorityContent[] = [
           "Because architecture determines how expensive it is to change the product later.",
       },
       {
-        question: "What does Astroeye optimize for?",
+        question: "What does MagicalStones optimize for?",
         answer:
           "Clarity, maintainability, operational fit, and long-term evolution.",
       },
@@ -116,7 +116,7 @@ export const authorityPages: AuthorityContent[] = [
     slug: "technology-decisions",
     title: "Technology Decisions",
     description:
-      "How Astroeye chooses technology based on product requirements, risk, and long-term operating cost.",
+      "How MagicalStones chooses technology based on product requirements, risk, and long-term operating cost.",
     whatIsThis:
       "A decision framework for selecting frameworks, databases, and infrastructure with intent.",
     whoIsItFor:
@@ -125,8 +125,8 @@ export const authorityPages: AuthorityContent[] = [
       "It prevents over-engineering and under-engineering by matching tools to the system constraints.",
     howDoesItWork:
       "Evaluate use case, scale profile, team capability, delivery risk, and migration cost.",
-    whyChooseAstroeye:
-      "Astroeye is explicit about tradeoffs and avoids technology choices that only look good in a pitch.",
+    whyChooseMagicalStones:
+      "MagicalStones is explicit about tradeoffs and avoids technology choices that only look good in a pitch.",
     related: [
       { label: "Engineering Principles", href: "/engineering-principles" },
       { label: "System Design Framework", href: "/system-design-framework" },
@@ -139,7 +139,7 @@ export const authorityPages: AuthorityContent[] = [
           "When the current architecture materially blocks delivery, reliability, or operational clarity.",
       },
       {
-        question: "How does Astroeye evaluate technologies?",
+        question: "How does MagicalStones evaluate technologies?",
         answer:
           "By looking at tradeoffs, production readiness, migration cost, and team fit.",
       },
@@ -158,7 +158,7 @@ export const authorityPages: AuthorityContent[] = [
       "It makes complex systems easier to reason about by defining boundaries, inputs, and outputs.",
     howDoesItWork:
       "Model domains, define states, draw boundaries, design APIs, and instrument the system.",
-    whyChooseAstroeye:
+    whyChooseMagicalStones:
       "The studio treats systems as the product, which keeps implementation aligned with outcomes.",
     related: [
       { label: "Process", href: "/process" },

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { verifySession } from "@/lib/auth/session";
+import { getAdminSession } from "@/lib/admin-auth";
 import { createUserSchema } from "@/features/customers";
 import { usersRepository } from "@/features/customers/repository/user.repository";
 import {
@@ -13,7 +13,7 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await verifySession();
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await verifySession();
+    const session = await getAdminSession();
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

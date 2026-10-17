@@ -172,7 +172,7 @@ export default function Page() {
     <main className="min-h-screen bg-[#FCFAF6] text-[#29251F]">
       {/* Announcement bar */}
       <div className="bg-[#29251F] px-4 py-2.5 text-center text-xs tracking-wide text-[#F7E9D3] sm:text-sm">
-        Discover your spiritual essentials with Astroeye.
+        Discover your spiritual essentials with MagicalStones.
         <span className="mx-2 text-[#C99A60]">✦</span>
         Shop with confidence.
       </div>
@@ -186,7 +186,7 @@ export default function Page() {
             </span>
             <span>
               <span className="block font-serif text-2xl font-semibold tracking-wide">
-                astroeye
+                MagicalStones
               </span>
               <span className="block text-[9px] uppercase tracking-[0.25em] text-[#897B69]">
                 Your spiritual destination
@@ -340,7 +340,7 @@ export default function Page() {
                   href="/shop"
                   className="mt-5 inline-flex items-center gap-2 border-b border-white/70 pb-1 text-sm"
                 >
-                  Discover Astroeye <span>↗</span>
+                  Discover MagicalStones <span>↗</span>
                 </Link>
               </div>
             </div>
@@ -374,7 +374,7 @@ export default function Page() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <SectionHeading
-            eyebrow="Explore Astroeye"
+            eyebrow="Explore MagicalStones"
             title="A place for all things spiritual."
             description="From everyday puja essentials to astrology tools, discover products for your personal practice and spiritual journey."
           />
@@ -454,7 +454,7 @@ export default function Page() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionHeading
-            eyebrow="The Astroeye edit"
+            eyebrow="The MagicalStones edit"
             title="Discover your next favourite."
             description="Explore selected spiritual essentials for your home, rituals and everyday practice."
           />
@@ -525,7 +525,7 @@ export default function Page() {
           <SectionHeading
             eyebrow="Beyond the store"
             title="Explore spiritual services."
-            description="Astroeye brings products, traditional services and astrology-related experiences together in one place."
+            description="MagicalStones brings products, traditional services and astrology-related experiences together in one place."
           />
 
           <div className="grid gap-5 md:grid-cols-3">
@@ -570,7 +570,7 @@ export default function Page() {
             />
           </div>
           <div className="absolute -bottom-5 -right-3 rounded-2xl border border-[#EAE3D9] bg-white px-5 py-4 shadow-sm sm:-right-5">
-            <p className="font-serif text-xl text-[#956537]">Astroeye</p>
+            <p className="font-serif text-xl text-[#956537]">MagicalStones</p>
             <p className="mt-1 text-xs text-[#83786A]">
               A destination for discovery
             </p>
@@ -581,7 +581,7 @@ export default function Page() {
           <SectionHeading
             eyebrow="Our philosophy"
             title="Your spiritual journey deserves a thoughtful space."
-            description="Astroeye is envisioned as a destination where spiritual products, astrology essentials and traditional services come together. Our goal is to make discovering the right essentials simpler and more accessible."
+            description="MagicalStones is envisioned as a destination where spiritual products, astrology essentials and traditional services come together. Our goal is to make discovering the right essentials simpler and more accessible."
           />
 
           <div className="space-y-4">
@@ -614,7 +614,7 @@ export default function Page() {
           <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#956537]">
-                The Astroeye journal
+                The MagicalStones journal
               </p>
               <h2 className="mt-3 font-serif text-3xl sm:text-4xl">
                 A little inspiration, delivered.
@@ -650,7 +650,7 @@ export default function Page() {
             </form>
           </div>
           <p className="mt-4 text-xs text-[#83786A]">
-            By subscribing, you agree to receive email updates from Astroeye.
+            By subscribing, you agree to receive email updates from MagicalStones.
             You can unsubscribe at any time.
           </p>
         </div>
@@ -664,7 +664,7 @@ export default function Page() {
               <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#C49A62] font-serif text-2xl text-[#D9B783]">
                 A
               </span>
-              <span className="font-serif text-3xl text-white">astroeye</span>
+              <span className="font-serif text-3xl text-white">MagicalStones</span>
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-7 text-[#BEB1A0]">
               Your destination for spiritual products, astrology essentials and
@@ -755,7 +755,7 @@ export default function Page() {
               </li>
               <li>
                 <Link href="/about" className="hover:text-white">
-                  About Astroeye
+                  About MagicalStones
                 </Link>
               </li>
             </ul>
@@ -764,7 +764,7 @@ export default function Page() {
 
         <div className="border-t border-white/10">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-[#BEB1A0] sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-            <p>© {new Date().getFullYear()} Astroeye. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} MagicalStones. All rights reserved.</p>
             <p>Made for a more thoughtful spiritual shopping experience.</p>
           </div>
         </div>

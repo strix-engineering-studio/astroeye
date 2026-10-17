@@ -1,10 +1,14 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
-import AdminLayout from "@/src/components/layout/AdminLayout";
-export default function PrivateLayout({
+import AdminLayout from "@/components/layout/AdminLayout";
+import { requireAdminSession } from "@/lib/admin-auth";
+
+export default async function PrivateLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireAdminSession();
+
   return (
     <TooltipProvider>
       <AdminLayout>{children}</AdminLayout>

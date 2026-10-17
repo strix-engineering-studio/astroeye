@@ -6,6 +6,9 @@ export interface Product {
   price: number;
   stockQuantity: number;
   isPublished: boolean;
+  imageUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface CreateProductInput {
@@ -14,6 +17,8 @@ export interface CreateProductInput {
   categoryId: string;
   price: number;
   stockQuantity: number;
+  isPublished?: boolean;
+  imageUrl?: string;
 }
 
 export interface UpdateProductInput {
@@ -23,4 +28,8 @@ export interface UpdateProductInput {
   price?: number;
   stockQuantity?: number;
   isPublished?: boolean;
+  imageUrl?: string;
 }
+
+export type ProductFormData = CreateProductInput;
+export type UpdateProductData = UpdateProductInput;

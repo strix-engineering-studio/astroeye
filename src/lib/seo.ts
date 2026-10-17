@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const siteConfig = {
-  name: "Astroeye",
-  shortName: "Astroeye",
+  name: "MagicalStones",
+  shortName: "MagicalStones",
   domain: "strix.website",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://strix.website",
   description:
-    "Astroeye helps startups and technology businesses design, build, deploy, and evolve production-grade software systems.",
-  founderName: "Astroeye",
+    "MagicalStones helps startups and technology businesses design, build, deploy, and evolve production-grade software systems.",
+  founderName: "MagicalStones",
   foundedAt: "2026-01-01",
   logo: "/strix.svg",
   sameAs: [

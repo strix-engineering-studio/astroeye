@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { verifySession } from "@/lib/auth/session";
+import { getAdminSession } from "@/lib/admin-auth";
 import { adminUserUpdateSchema } from "@/features/admins";
 import { adminUsersRepository } from "@/features/admins/repository/admin.users.repository";
 
@@ -14,28 +14,33 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifySession();
-  if (!session)
+  const session = await getAdminSession();
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!(await adminUsersRepository.findById(session))?.isActive) {
-    return NextResponse.json(
-      { error: "Admin access required" },
-      { status: 403 },
-    );
   }
 
   try {
     const { id } = await context.params;
-    if (!(await adminUsersRepository.findById(id))) {
+    const existing = await adminUsersRepository.findById(id);
+    if (!existing) {
       return NextResponse.json(
         { error: "Admin user not found" },
         { status: 404 },
       );
     }
+
     const payload = adminUserUpdateSchema.parse(await request.json());
-    return NextResponse.json(
-      withoutPassword(await adminUsersRepository.update(id, payload)),
-    );
+
+    // Prevent deactivating own account
+    if (session.uid === id && payload.isActive === false) {
+      return NextResponse.json(
+        { error: "You cannot deactivate your own admin account" },
+        { status: 400 },
+      );
+    }
+
+    const updated = await adminUsersRepository.update(id, payload);
+    return NextResponse.json(withoutPassword(updated));
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
@@ -55,18 +60,23 @@ export async function DELETE(
   _: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifySession();
-  if (!session)
+  const session = await getAdminSession();
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!(await adminUsersRepository.findById(session))?.isActive) {
-    return NextResponse.json(
-      { error: "Admin access required" },
-      { status: 403 },
-    );
   }
 
   const { id } = await context.params;
-  if (!(await adminUsersRepository.findById(id))) {
+
+  // Prevent administrator from deleting themselves
+  if (session.uid === id) {
+    return NextResponse.json(
+      { error: "You cannot delete your own admin account" },
+      { status: 400 },
+    );
+  }
+
+  const existing = await adminUsersRepository.findById(id);
+  if (!existing) {
     return NextResponse.json(
       { error: "Admin user not found" },
       { status: 404 },
@@ -81,15 +91,19 @@ export async function GET(
   _: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await verifySession();
-  if (!session || !(await adminUsersRepository.findById(session))?.isActive) {
+  const session = await getAdminSession();
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const admin = await adminUsersRepository.findById((await context.params).id);
-  if (!admin)
+
+  const { id } = await context.params;
+  const admin = await adminUsersRepository.findById(id);
+  if (!admin) {
     return NextResponse.json(
       { error: "Admin user not found" },
       { status: 404 },
     );
+  }
+
   return NextResponse.json(withoutPassword(admin));
 }

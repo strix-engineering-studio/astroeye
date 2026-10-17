@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import PolicyLayout from "@/components/layout/policy-layout";
 
 export const metadata: Metadata = {
-  title: "Return Policy | Astroeye",
-  description: "Review Astroeye's return eligibility and refund process.",
+  title: "Return Policy | MagicalStones",
+  description: "Review MagicalStones's return eligibility and refund process.",
 };
 
 export default function ReturnPolicyPage() {
@@ -41,7 +41,7 @@ export default function ReturnPolicyPage() {
           content: (
             <p>
               If an item arrives damaged, defective, or different from the item
-              ordered, contact Astroeye promptly with the order number, a
+              ordered, contact MagicalStones promptly with the order number, a
               description of the issue, and photographs where appropriate. We
               will assess the issue and communicate the available remedy, which
               may include replacement, repair, return, or refund as applicable.
@@ -52,7 +52,7 @@ export default function ReturnPolicyPage() {
           title: "How to Request a Return",
           content: (
             <p>
-              Contact Astroeye through its official support details and provide
+              Contact MagicalStones through its official support details and provide
               your order number, the affected product, and the reason for the
               request. Wait for return instructions before shipping the product
               back. Any authorization requirement must not be used to defeat
@@ -77,7 +77,7 @@ export default function ReturnPolicyPage() {
           content: (
             <p>
               Return shipping responsibility depends on the reason for the
-              return and the terms disclosed at purchase. Astroeye should
+              return and the terms disclosed at purchase. MagicalStones should
               clearly specify who bears the cost for damaged, defective,
               incorrect, and eligible change-of-mind returns, subject to
               applicable law.
@@ -113,7 +113,7 @@ export default function ReturnPolicyPage() {
           content: (
             <p>
               If you disagree with a return decision or have not received an
-              expected refund, contact Astroeye with your order reference and
+              expected refund, contact MagicalStones with your order reference and
               relevant correspondence. We will review the request and respond
               using the published customer support channel.
             </p>

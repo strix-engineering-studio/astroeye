@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import PolicyLayout from "@/components/layout/policy-layout";
 
 export const metadata: Metadata = {
-  title: "Cancellation Policy | Astroeye",
+  title: "Cancellation Policy | MagicalStones",
   description:
-    "Understand order cancellation and refund procedures at Astroeye.",
+    "Understand order cancellation and refund procedures at MagicalStones.",
 };
 
 export default function CancellationPolicyPage() {
   return (
     <PolicyLayout
       title="Cancellation Policy"
-      description="Understand when an Astroeye order can be cancelled and how eligible refunds are handled."
+      description="Understand when an MagicalStones order can be cancelled and how eligible refunds are handled."
       sections={[
         {
           title: "Customer-Initiated Cancellation",
@@ -41,7 +41,7 @@ export default function CancellationPolicyPage() {
           title: "How to Request Cancellation",
           content: (
             <p>
-              Contact Astroeye using the official support details published on
+              Contact MagicalStones using the official support details published on
               the website. Include your order number and the reason for
               cancellation. Do not send full payment card details or other
               sensitive payment credentials.
@@ -49,7 +49,7 @@ export default function CancellationPolicyPage() {
           ),
         },
         {
-          title: "Cancellation by Astroeye",
+          title: "Cancellation by MagicalStones",
           content: (
             <p>
               We may need to cancel an order where a product is unavailable, a
@@ -77,7 +77,7 @@ export default function CancellationPolicyPage() {
             <p>
               Customers should retain the cancellation confirmation and order
               reference for future communication. If a refund has not arrived
-              within the communicated timeframe, contact Astroeye with the
+              within the communicated timeframe, contact MagicalStones with the
               relevant order reference.
             </p>
           ),

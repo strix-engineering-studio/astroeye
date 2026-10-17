@@ -12,7 +12,7 @@ import { siteConfig } from "@/lib/seo";
 import "./globals.css";
 import AppProviders from "@/providers/AppProviders";
 import { cn } from "@/lib/utils";
-import { ensureIAdminUser } from "../lib/firebase/seed-admin";
+// import { ensureIAdminUser } from "../lib/firebase/seed-admin";
 
 const playfairDisplayHeading = Playfair_Display({
   subsets: ["latin"],
@@ -52,19 +52,19 @@ const monoFont = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Astroeye | Architecture-First Product Engineering",
-    template: "%s | Astroeye",
+    default: "MagicalStones | Architecture-First Product Engineering",
+    template: "%s | MagicalStones",
   },
   description: siteConfig.description,
   keywords: siteConfig.defaultKeywords,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Astroeye",
+    title: "MagicalStones",
     statusBarStyle: "black-translucent",
   },
   openGraph: {
-    title: "Astroeye | Architecture-First Product Engineering",
+    title: "MagicalStones | Architecture-First Product Engineering",
     description: siteConfig.description,
     url: "/",
     siteName: siteConfig.name,
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Astroeye",
+    title: "MagicalStones",
     description: siteConfig.description,
   },
 

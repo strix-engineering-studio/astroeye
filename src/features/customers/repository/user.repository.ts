@@ -163,6 +163,14 @@ class UsersRepository {
   async findById(id: string): Promise<UserType | null> {
     try {
       logger.info("Finding user by ID:", id);
+      const directDoc = await firestoreService.getDocument<
+        Record<string, unknown>
+      >(COLLECTIONS.USERS, id);
+
+      if (directDoc) {
+        return this.mapUser(directDoc);
+      }
+
       const users = await firestoreService.getDocumentsByField<
         Record<string, unknown>
       >(COLLECTIONS.USERS, "id", id);

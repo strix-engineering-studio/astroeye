@@ -1,5 +1,7 @@
-import Login from "@/src/features/auth/pages/LoginPage";
+"use client";
 
-export default function Page() {
-  return <Login />;
+import LoginPage from "@/features/auth/pages/LoginPage";
+
+export default function LoginRoute() {
+  return <LoginPage />;
 }

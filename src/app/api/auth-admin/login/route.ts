@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authRepository } from "@/features/auth/repository/auth.repository";
-import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
-import { loginSchema } from "@/features/auth/schemas/auth.schema";
+import { authRepository } from "@/features/auth-admin/repository/auth.repository";
+import { loginSchema } from "@/features/auth-admin/schemas/auth.schema";
 import { logger } from "@/lib/logger";
 import { APP_ENV, isDev } from "@/lib/env";
-
-const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7; // 7 days (Firebase max is 14)
+import { ADMIN_SESSION_COOKIE, ADMIN_SESSION_TTL_MS } from "@/lib/admin-auth";
 
 const maskEmail = (email: string) => {
   if (isDev) return email;
@@ -13,9 +11,6 @@ const maskEmail = (email: string) => {
   return `${name.slice(0, 2)}***@${domain}`;
 };
 
-// Map your repository's auth failures here; anything else is a server error.
-// Firebase REST login errors usually contain codes like INVALID_PASSWORD,
-// EMAIL_NOT_FOUND, INVALID_LOGIN_CREDENTIALS, USER_DISABLED.
 const isAuthFailure = (error: unknown) => {
   const msg = error instanceof Error ? error.message : String(error);
   return /INVALID_PASSWORD|EMAIL_NOT_FOUND|INVALID_LOGIN_CREDENTIALS|USER_DISABLED|auth\//i.test(
@@ -28,7 +23,6 @@ export async function POST(request: NextRequest) {
   const log = { requestId, appEnv: APP_ENV };
 
   try {
-    // 1. Parse + validate
     let body: unknown;
     try {
       body = await request.json();
@@ -38,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     const parsed = loginSchema.safeParse(body);
     if (!parsed.success) {
-      logger.warn("Login validation failed", {
+      logger.warn("Admin login validation failed", {
         ...log,
         fields: Object.keys(parsed.error.flatten().fieldErrors),
       });
@@ -50,40 +44,43 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = parsed.data;
 
-    // 2. Firebase email/password sign-in
+    // Firebase email/password sign-in
     const { idToken, localId: uid } = await authRepository.login(
       email,
       password,
     );
 
-    // 3. Load admin profile and enforce access BEFORE issuing a cookie
+    // Load admin profile and enforce access BEFORE issuing a cookie
     const user = await authRepository.getUser(uid);
 
     if (!user.isActive) {
-      logger.warn("Login blocked: inactive admin", { ...log, uid });
+      logger.warn("Admin login blocked: inactive admin", { ...log, uid });
       return NextResponse.json(
         { message: "Invalid email or password" },
         { status: 401 },
       );
     }
 
-    // 4. Create session cookie
+    // Create session cookie
     const sessionCookie = await authRepository.createSession(
       idToken,
-      SESSION_MAX_AGE_MS,
+      ADMIN_SESSION_TTL_MS,
     );
 
-    const response = NextResponse.json(user);
+    const safeUser = { ...user };
+    delete (safeUser as { password?: string }).password;
 
-    response.cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
+    const response = NextResponse.json(safeUser);
+
+    response.cookies.set(ADMIN_SESSION_COOKIE, sessionCookie, {
       httpOnly: true,
       secure: APP_ENV !== "development",
       sameSite: "lax",
       path: "/",
-      maxAge: SESSION_MAX_AGE_MS / 1000,
+      maxAge: ADMIN_SESSION_TTL_MS / 1000,
     });
 
-    logger.info("Login success", { ...log, uid, email: maskEmail(email) });
+    logger.info("Admin login success", { ...log, uid, email: maskEmail(email) });
 
     return response;
   } catch (error) {
@@ -94,20 +91,19 @@ export async function POST(request: NextRequest) {
         ? {
             name: error.name,
             message: error.message,
-            // stacks only outside production
             ...(APP_ENV !== "production" && { stack: error.stack }),
           }
         : { error: String(error) };
 
     if (authFailure) {
-      logger.warn("Login failed: bad credentials", { ...log, ...details });
+      logger.warn("Admin login failed: bad credentials", { ...log, ...details });
       return NextResponse.json(
         { message: "Invalid email or password" },
         { status: 401 },
       );
     }
 
-    logger.error("Login failed: unexpected error", { ...log, ...details });
+    logger.error("Admin login failed: unexpected error", { ...log, ...details });
     return NextResponse.json(
       { message: "Something went wrong. Please try again." },
       { status: 500 },

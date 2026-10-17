@@ -1,4 +1,4 @@
-// Firebase Configuration for Astroeye Next.js Project
+// Firebase Configuration for MagicalStones Next.js Project
 import { initializeApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 

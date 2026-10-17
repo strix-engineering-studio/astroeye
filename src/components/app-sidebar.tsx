@@ -37,7 +37,7 @@ import { Separator } from "./ui/separator";
 const data = {
   user: {
     name: "Admin",
-    email: "admin@astroeye.app",
+    email: "admin@MagicalStones.app",
     avatar: "/avatars/admin.png",
   },
 
@@ -117,8 +117,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             >
               <Link href="/" className="flex items-center gap-3">
                 <Image
-                  src="/astroeye-logo-512x512.png"
-                  alt="Astroeye"
+                  src="/MagicalStones-logo-512x512.png"
+                  alt="MagicalStones"
                   width={40}
                   height={40}
                   priority
@@ -126,7 +126,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 />
 
                 <div className="flex flex-col leading-none">
-                  <span className="text-base font-semibold">Astroeye</span>
+                  <span className="text-base font-semibold">MagicalStones</span>
                   <span className="text-muted-foreground text-xs">
                     Admin Console v{packageJson.version}
                   </span>
@@ -151,7 +151,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             rel="noopener noreferrer"
             className="hover:text-primary font-medium"
           >
-            Astroeye
+            MagicalStones
           </Link>
         </p>
       </SidebarFooter>
