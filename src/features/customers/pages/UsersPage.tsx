@@ -294,7 +294,7 @@ export const UsersPage: React.FC = () => {
               }}
             >
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger >
                   <Button
                     type="button"
                     variant="ghost"
@@ -309,7 +309,7 @@ export const UsersPage: React.FC = () => {
                   align="end"
                   className="bg-card border-border w-48 border"
                 >
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem >
                     <Link
                       href={`/users/${user.id}`}
                       className="flex cursor-pointer items-center gap-2 text-xs font-medium"
@@ -319,7 +319,7 @@ export const UsersPage: React.FC = () => {
                     </Link>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem >
                     <Link
                       href={`/users/${user.id}/edit`}
                       className="flex cursor-pointer items-center gap-2 text-xs font-medium"

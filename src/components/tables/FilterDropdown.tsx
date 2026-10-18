@@ -35,7 +35,7 @@ interface FilterDropdownProps {
 export function FilterDropdown({ filters, values = {}, onChange }: FilterDropdownProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger >
         <Button variant="outline" size="icon" aria-label="Filters">
           <Filter className="h-4 w-4" />
           <span className="sr-only">Filters</span>

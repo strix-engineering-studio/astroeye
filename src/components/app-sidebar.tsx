@@ -20,6 +20,10 @@ import {
   LogsIcon,
   Menu,
   Map,
+  Package,
+  ShoppingBagIcon,
+  Wallet,
+  Tag,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -44,70 +48,47 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/",
+      url: "/console/",
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Users",
-      url: "/users",
+      title: "Customers",
+      url: "/console/customers",
       icon: UsersIcon,
     },
     {
-      title: "Communities",
-      url: "/communities",
-      icon: UsersRoundIcon,
+      title: "Products",
+      url: "/console/products",
+      icon: Package,
     },
     {
-      title: "Meets",
-      url: "/meets",
-      icon: Map,
+      title: "Coupons",
+      url: "/console/coupons",
+      icon: Tag,
     },
     {
-      title: "Feed",
-      url: "/feed",
-      icon: RssIcon,
+      title: "Orders",
+      url: "/console/orders",
+      icon: ShoppingBagIcon,
     },
     {
-      title: "Webinars",
-      url: "/webinars",
-      icon: VideoIcon,
+      title: "Payments",
+      url: "/console/payments",
+      icon: Wallet,
     },
-    {
-      title: "Resources",
-      url: "/resources",
-      icon: LibraryBigIcon,
-    },
-    {
-      title: "Expert Requests",
-      url: "/expert-requests",
-      icon: Crown,
-    },
-    {
-      title: "Moderation",
-      url: "/moderation",
-      icon: ShieldCheckIcon,
-    },
-    {
-      title: "Notifications",
-      url: "/notifications",
-      icon: BellIcon,
-    },
+
     {
       title: "Team",
-      url: "/admins",
-      icon: CrownIcon,
+      url: "/console/admins",
+      icon: UsersRoundIcon,
     },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings2Icon,
-    },
+   
   ],
 };
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" variant="inset" {...props}>
+    <Sidebar collapsible="offcanvas" variant="sidebar" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

@@ -281,7 +281,7 @@ export function DataTableToolbar<TData, TValue>({
 
         {enableColumnVisibility && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger >
               <Button variant="outline">
                 <SlidersHorizontal className="h-4 w-4" />
               </Button>

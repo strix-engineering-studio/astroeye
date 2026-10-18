@@ -3,9 +3,10 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
 import { CommandMenu } from "@/components/CommandMenu";
-import { SiteHeader } from "@/components/site-header";
+
 import { ScrollArea } from "../ui/scroll-area";
 import { EnvironmentBanner } from "../environment-banner";
+import { ConsoleSiteHeader } from "../console/console-site-header";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -29,7 +30,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <AppSidebar />
         <SidebarInset className="h-svh min-h-0 overflow-hidden">
           {/* Header */}
-          <SiteHeader />
+          <ConsoleSiteHeader />
           <EnvironmentBanner />
 
           {/* Scrollable content */}

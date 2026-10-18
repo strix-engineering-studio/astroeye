@@ -1,20 +1,34 @@
-// This file configures the initialization of Sentry for edge features (middleware, edge routes, and so on).
-// The config you add here will be used whenever one of the edge features is loaded.
-// Note that this config is unrelated to the Vercel Edge Runtime and is also required when running locally.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
-
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: "https://f1d8478821b8da855e2a2d69429f5398@o4512237446692864.ingest.us.sentry.io/4512237448003584",
+  dsn: process.env.SENTRY_DSN,
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  enabled: true,
+  environment: process.env.NODE_ENV,
 
-  dataCollection: {
-    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
-    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
-    // userInfo: false,
-    // httpBodies: [],
-  },
+  debug: process.env.NODE_ENV === "development",
+
+  tracesSampleRate:
+    process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 });
+
+// // This file configures the initialization of Sentry for edge features (middleware, edge routes, and so on).
+// // The config you add here will be used whenever one of the edge features is loaded.
+// // Note that this config is unrelated to the Vercel Edge Runtime and is also required when running locally.
+// // https://docs.sentry.io/platforms/javascript/guides/nextjs/
+
+// import * as Sentry from "@sentry/nextjs";
+
+// Sentry.init({
+//   dsn: "https://f1d8478821b8da855e2a2d69429f5398@o4512237446692864.ingest.us.sentry.io/4512237448003584",
+
+//   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+//   tracesSampleRate: 1,
+
+//   dataCollection: {
+//     // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+//     // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
+//     // userInfo: false,
+//     // httpBodies: [],
+//   },
+// });
