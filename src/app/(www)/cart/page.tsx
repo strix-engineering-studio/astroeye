@@ -1,7 +1,7 @@
 
 'use client'
 
-import CartPage from "@/src/features/products/pages/CartPage";
+import CartPage from "@/src/features/orders/pages/CartPage";
 
 
 

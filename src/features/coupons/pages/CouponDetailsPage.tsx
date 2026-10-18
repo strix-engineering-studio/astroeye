@@ -15,6 +15,9 @@ import {
   Trash2,
   ShoppingCart,
   FileText,
+  Users,
+  TrendingUp,
+  PlayCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,37 +38,37 @@ export function CouponDetailsPage({
   onDelete,
   onToggleStatus,
 }: CouponDetailsPageProps) {
-  const expiryDate = coupon.expiresAt ? new Date(coupon.expiresAt) : null;
+  // ── Date helpers ──────────────────────────────────────────────────────────
+  const toJsDate = (value: unknown): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value === "object" && "toDate" in (value as object)) {
+      return (value as { toDate: () => Date }).toDate();
+    }
+    const d = new Date(String(value));
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
 
-  const isValidExpiry =
-    expiryDate !== null && !Number.isNaN(expiryDate.getTime());
-
-  const isExpired = isValidExpiry && expiryDate.getTime() < Date.now();
-
+  const expiryDate = toJsDate(coupon.expiresAt);
+  const startsAtDate = toJsDate(coupon.startsAt);
+  const isExpired =
+    expiryDate !== null && expiryDate.getTime() < Date.now();
   const isCurrentlyValid = coupon.isActive && !isExpired;
 
-  const formatDate = (value?: Date | string | null) => {
-    if (!value) return "-";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) return "-";
-
-    return date.toLocaleDateString("en-IN", {
+  const formatDate = (value: unknown) => {
+    const d = toJsDate(value);
+    if (!d) return "-";
+    return d.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
   };
 
-  const formatDateTime = (value?: Date | string | null) => {
-    if (!value) return "-";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) return "-";
-
-    return date.toLocaleString("en-IN", {
+  const formatDateTime = (value: unknown) => {
+    const d = toJsDate(value);
+    if (!d) return "-";
+    return d.toLocaleString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -75,10 +78,7 @@ export function CouponDetailsPage({
   };
 
   const formatCurrency = (value?: number | null) => {
-    if (value === undefined || value === null) {
-      return "No minimum";
-    }
-
+    if (value === undefined || value === null) return "No minimum";
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -103,9 +103,15 @@ export function CouponDetailsPage({
       ? "border-amber-500/20 bg-amber-500/10 text-amber-600"
       : "border-emerald-500/20 bg-emerald-500/10 text-emerald-600";
 
+  // Usage progress
+  const usagePct =
+    coupon.usageLimit !== null && coupon.usageLimit > 0
+      ? Math.min((coupon.usageCount / coupon.usageLimit) * 100, 100)
+      : null;
+
   return (
     <div className="container mx-auto max-w-7xl space-y-6">
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-start gap-3">
           <Button
@@ -123,12 +129,10 @@ export function CouponDetailsPage({
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 {coupon.code}
               </h1>
-
               <Badge variant="outline" className={statusClass}>
                 {statusLabel}
               </Badge>
             </div>
-
             <p className="text-muted-foreground mt-1 text-sm">
               Coupon details and promotional settings
             </p>
@@ -162,7 +166,7 @@ export function CouponDetailsPage({
         </div>
       </div>
 
-      {/* Coupon overview */}
+      {/* ── Coupon Overview ── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -203,8 +207,24 @@ export function CouponDetailsPage({
           <InfoItem
             icon={<ShoppingCart className="h-4 w-4" />}
             label="Minimum Order Amount"
-            value={formatCurrency(coupon.minimumOrderAmount)}
+            value={
+              coupon.minOrderAmount
+                ? formatCurrency(coupon.minOrderAmount)
+                : "No minimum"
+            }
           />
+
+          {coupon.discountType === "percentage" && (
+            <InfoItem
+              icon={<CircleDollarSign className="h-4 w-4" />}
+              label="Max Discount Cap"
+              value={
+                coupon.maxDiscountAmount !== null
+                  ? formatCurrency(coupon.maxDiscountAmount)
+                  : "No cap"
+              }
+            />
+          )}
 
           <InfoItem
             icon={
@@ -217,18 +237,52 @@ export function CouponDetailsPage({
             label="Current Status"
             value={statusLabel}
           />
-
-          <InfoItem
-            icon={<Calendar className="h-4 w-4" />}
-            label="Expiry Date"
-            value={
-              coupon.expiresAt ? formatDate(coupon.expiresAt) : "No expiry"
-            }
-          />
         </CardContent>
       </Card>
 
-      {/* Description */}
+      {/* ── Usage ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Usage Statistics
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <InfoItem
+            icon={<TrendingUp className="h-4 w-4" />}
+            label="Total Redemptions"
+            value={String(coupon.usageCount)}
+          />
+
+          <InfoItem
+            icon={<Users className="h-4 w-4" />}
+            label="Usage Limit"
+            value={
+              coupon.usageLimit !== null
+                ? `${coupon.usageCount} / ${coupon.usageLimit}`
+                : "Unlimited"
+            }
+          />
+
+          {usagePct !== null && (
+            <div className="sm:col-span-2">
+              <p className="text-muted-foreground mb-2 text-xs">
+                Usage: {usagePct.toFixed(0)}%
+              </p>
+              <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
+                <div
+                  className="h-2 rounded-full bg-emerald-500 transition-all"
+                  style={{ width: `${usagePct}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Description ── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -250,7 +304,7 @@ export function CouponDetailsPage({
         </CardContent>
       </Card>
 
-      {/* Validity */}
+      {/* ── Validity ── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -261,12 +315,20 @@ export function CouponDetailsPage({
 
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <InfoItem
+            icon={<PlayCircle className="h-4 w-4" />}
+            label="Starts At"
+            value={
+              startsAtDate ? formatDateTime(startsAtDate) : "Immediately"
+            }
+          />
+
+          <InfoItem
             icon={<Calendar className="h-4 w-4" />}
-            label="Valid Until"
+            label="Expires At"
             value={
               coupon.expiresAt
                 ? formatDateTime(coupon.expiresAt)
-                : "No expiry date configured"
+                : "No expiry date"
             }
           />
 
@@ -278,7 +340,7 @@ export function CouponDetailsPage({
         </CardContent>
       </Card>
 
-      {/* Audit information */}
+      {/* ── Record Info ── */}
       <Card>
         <CardHeader>
           <CardTitle>Record Information</CardTitle>
@@ -308,6 +370,9 @@ export function CouponDetailsPage({
   );
 }
 
+// ---------------------------------------------------------------------------
+// InfoItem helper
+// ---------------------------------------------------------------------------
 interface InfoItemProps {
   icon?: React.ReactNode;
   label: string;
@@ -321,7 +386,6 @@ function InfoItem({ icon, label, value }: InfoItemProps) {
         {icon}
         <span>{label}</span>
       </div>
-
       <div className="break-words font-medium">{value ?? "-"}</div>
     </div>
   );

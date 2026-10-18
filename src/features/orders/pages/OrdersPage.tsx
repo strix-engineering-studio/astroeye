@@ -296,7 +296,7 @@ export const OrdersPage: React.FC<{
               }}
             >
               {/* View */}
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem >
                 <Link
                   href={`/orders/${order.id}`}
                   className="flex cursor-pointer items-center rounded-md text-xs font-medium"
@@ -307,7 +307,7 @@ export const OrdersPage: React.FC<{
               </DropdownMenuItem>
 
               {/* Edit */}
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem >
                 <Link
                   href={`/orders/${order.id}/edit`}
                   className="flex cursor-pointer items-center rounded-md text-xs font-medium"

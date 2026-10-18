@@ -90,13 +90,12 @@ export function ConsoleSiteHeader() {
                         {crumb.label}
                       </BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink >
-                        <Link
+                      <BreadcrumbLink 
                           href={crumb.href}
                           className="text-muted-foreground hover:text-foreground text-sm"
                         >
                           {crumb.label}
-                        </Link>
+                     
                       </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>

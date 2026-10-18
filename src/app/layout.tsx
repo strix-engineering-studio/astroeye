@@ -12,7 +12,7 @@ import { siteConfig } from "@/lib/seo";
 import "./globals.css";
 import AppProviders from "@/providers/AppProviders";
 import { cn } from "@/lib/utils";
-// import { ensureIAdminUser } from "../lib/firebase/seed-admin";
+import { ensureIAdminUser } from "../lib/firebase/seed-admin";
 
 const playfairDisplayHeading = Playfair_Display({
   subsets: ["latin"],
@@ -102,6 +102,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html
       lang="en"

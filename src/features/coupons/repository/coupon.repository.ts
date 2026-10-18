@@ -5,225 +5,178 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { COLLECTIONS } from "@/lib/constants/COLLECTIONS";
 import { firestoreService } from "@/lib/firebase/admin-firestore";
 import { logger } from "@/lib/logger";
-import { Coupon, CouponFormData } from "../types/coupon.type";
+import { Coupon, CouponFormData, UpdateCouponData } from "../types/coupon.type";
 
 class CouponRepository {
-  /**
-   * Convert a Firestore timestamp or serialized date into a JavaScript Date.
-   */
+  // ---------------------------------------------------------------------------
+  // Private helpers
+  // ---------------------------------------------------------------------------
+
   private toDate(value: unknown): Date | undefined {
-    if (!value) {
-      return undefined;
-    }
-
-    if (value instanceof Timestamp) {
-      return value.toDate();
-    }
-
-    if (value instanceof Date) {
-      return value;
-    }
+    if (!value) return undefined;
+    if (value instanceof Timestamp) return value.toDate();
+    if (value instanceof Date) return value;
 
     if (typeof value === "object" && value !== null && "_seconds" in value) {
-      const timestamp = value as {
-        _seconds?: unknown;
-        _nanoseconds?: unknown;
-      };
-
-      const seconds = Number(timestamp._seconds);
-      const nanoseconds = Number(timestamp._nanoseconds ?? 0);
-
-      if (Number.isFinite(seconds) && Number.isFinite(nanoseconds)) {
-        return new Date(seconds * 1000 + Math.floor(nanoseconds / 1_000_000));
+      const ts = value as { _seconds?: unknown; _nanoseconds?: unknown };
+      const s = Number(ts._seconds);
+      const ns = Number(ts._nanoseconds ?? 0);
+      if (Number.isFinite(s)) {
+        return new Date(s * 1000 + Math.floor(ns / 1_000_000));
       }
     }
 
     if (typeof value === "string") {
-      const date = new Date(value);
-
-      if (!Number.isNaN(date.getTime())) {
-        return date;
-      }
+      const d = new Date(value);
+      if (!Number.isNaN(d.getTime())) return d;
     }
 
     return undefined;
   }
 
-  /**
-   * Normalize a Firestore coupon document into the application model.
-   */
-  private normalize(data: Record<string, unknown>): Coupon {
-    const createdAt = this.toDate(data.createdAt);
-    const updatedAt = this.toDate(data.updatedAt);
-    const expiresAt = this.toDate(data.expiresAt);
-
-    return {
-      ...data,
-      id: typeof data.id === "string" ? data.id : "",
-      code: typeof data.code === "string" ? data.code : "",
-      isActive: typeof data.isActive === "boolean" ? data.isActive : false,
-      createdAt,
-      updatedAt,
-      expiresAt,
-    } as Coupon;
+  private toNullableDate(value: unknown): Date | null {
+    return this.toDate(value) ?? null;
   }
 
-  /**
-   * Get all coupons.
-   */
+  private toNumber(value: unknown, fallback: number): number {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  private toNullableNumber(value: unknown): number | null {
+    if (value === null || value === undefined) return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  /** Normalize a Firestore document into the application Coupon model. */
+  private normalize(data: Record<string, unknown>): Coupon {
+    return {
+      id: typeof data.id === "string" ? data.id : "",
+      code: typeof data.code === "string" ? data.code : "",
+      description:
+        typeof data.description === "string" ? data.description : undefined,
+      discountType:
+        data.discountType === "percentage" || data.discountType === "fixed"
+          ? data.discountType
+          : "fixed",
+      discountValue: this.toNumber(data.discountValue, 0),
+      minOrderAmount: this.toNumber(data.minOrderAmount, 0),
+      maxDiscountAmount: this.toNullableNumber(data.maxDiscountAmount),
+      usageLimit: this.toNullableNumber(data.usageLimit),
+      usageCount: this.toNumber(data.usageCount, 0),
+      startsAt: this.toNullableDate(data.startsAt),
+      expiresAt: this.toNullableDate(data.expiresAt),
+      isActive: typeof data.isActive === "boolean" ? data.isActive : false,
+      createdAt: this.toDate(data.createdAt),
+      updatedAt: this.toDate(data.updatedAt),
+    };
+  }
+
+  /** Convert a JS Date (or null) to a Firestore Timestamp (or null). */
+  private toTimestamp(value: Date | null | undefined): Timestamp | null {
+    if (!value) return null;
+    return Timestamp.fromDate(value);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Query methods
+  // ---------------------------------------------------------------------------
+
   async findAll(): Promise<Coupon[]> {
     try {
       logger.info("Finding all coupons");
-
-      const coupons = await firestoreService.getDocuments<
+      const docs = await firestoreService.getDocumentsOrdered<
         Record<string, unknown>
-      >(COLLECTIONS.COUPONS);
-
-      const mappedCoupons = coupons.map((coupon) => this.normalize(coupon));
-
-      logger.debug({ count: mappedCoupons.length }, "Returning all coupons");
-
-      return mappedCoupons;
+      >(COLLECTIONS.COUPONS, "createdAt", undefined, "desc");
+      return docs.map((d) => this.normalize(d));
     } catch (error) {
       logger.error({ error }, "Error finding all coupons");
       throw error;
     }
   }
 
-  /**
-   * Get all coupons ordered by creation date.
-   */
-  async findAllOrdered(): Promise<Coupon[]> {
-    try {
-      logger.info("Finding coupons ordered by creation date");
-
-      const coupons = await firestoreService.getDocumentsOrdered<
-        Record<string, unknown>
-      >(COLLECTIONS.COUPONS, "createdAt", undefined, "desc");
-
-      return coupons.map((coupon) => this.normalize(coupon));
-    } catch (error) {
-      logger.error({ error }, "Error finding ordered coupons");
-      throw error;
-    }
-  }
-
-  /**
-   * Find a coupon by Firestore document ID.
-   */
   async findById(id: string): Promise<Coupon | null> {
     try {
       logger.info({ id }, "Finding coupon by ID");
-
-      const coupon = await firestoreService.getDocument<
-        Record<string, unknown>
-      >(COLLECTIONS.COUPONS, id);
-
-      if (!coupon) {
+      const doc = await firestoreService.getDocument<Record<string, unknown>>(
+        COLLECTIONS.COUPONS,
+        id,
+      );
+      if (!doc) {
         logger.warn({ id }, "Coupon not found");
         return null;
       }
-
-      return this.normalize({ ...coupon, id });
+      return this.normalize({ ...doc, id });
     } catch (error) {
       logger.error({ id, error }, "Error finding coupon by ID");
       throw error;
     }
   }
 
-  /**
-   * Find a coupon by its code.
-   */
   async findByCode(code: string): Promise<Coupon | null> {
     try {
       logger.info({ code }, "Finding coupon by code");
-
-      const couponRef = await firestoreService.getDocumentReferenceByField(
+      const ref = await firestoreService.getDocumentReferenceByField(
         COLLECTIONS.COUPONS,
         "code",
-        code,
+        code.toUpperCase(),
       );
-
-      if (!couponRef) {
+      if (!ref) {
         logger.warn({ code }, "Coupon not found for code");
         return null;
       }
-
-      const coupon = await this.findById(couponRef.id);
-
-      return coupon;
+      return this.findById(ref.id);
     } catch (error) {
       logger.error({ code, error }, "Error finding coupon by code");
       throw error;
     }
   }
 
-  /**
-   * Find active coupons ordered by expiry date.
-   *
-   * Note: This filters on isActive only. Expired coupons are excluded
-   * separately if the caller needs only currently valid coupons.
-   */
   async findActive(): Promise<Coupon[]> {
     try {
       logger.info("Finding active coupons");
-
-      const coupons = await firestoreService.queryDocuments<
+      const docs = await firestoreService.queryDocuments<
         Record<string, unknown>
       >(COLLECTIONS.COUPONS, {
-        filters: [
-          {
-            field: "isActive",
-            operator: "==",
-            value: true,
-          },
-        ],
-        orderBy: {
-          field: "expiresAt",
-          direction: "desc",
-        },
+        filters: [{ field: "isActive", operator: "==", value: true }],
+        orderBy: { field: "createdAt", direction: "desc" },
       });
-
-      return coupons.map((coupon) => this.normalize(coupon));
+      return docs.map((d) => this.normalize(d));
     } catch (error) {
       logger.error({ error }, "Error finding active coupons");
       throw error;
     }
   }
 
-  /**
-   * Create a new coupon.
-   */
+  // ---------------------------------------------------------------------------
+  // Mutation methods
+  // ---------------------------------------------------------------------------
+
   async create(data: CouponFormData): Promise<Coupon> {
     try {
       logger.info({ code: data.code }, "Creating coupon");
-
-      const couponData = {
+      const payload = {
         ...data,
+        code: data.code.toUpperCase(),
+        usageCount: 0,
+        startsAt: this.toTimestamp(data.startsAt),
+        expiresAt: this.toTimestamp(data.expiresAt),
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       };
 
-      const createdCoupon = await firestoreService.addDocument<
+      const created = await firestoreService.addDocument<
         Record<string, unknown>
-      >(COLLECTIONS.COUPONS, couponData as Omit<Record<string, unknown>, "id">);
-
-      const coupon = await this.findById(createdCoupon.id as string);
-
-      if (!coupon) {
-        logger.error(
-          { id: createdCoupon.id },
-          "Failed to retrieve created coupon",
-        );
-
-        throw new Error("Failed to retrieve created coupon");
-      }
-
-      logger.info(
-        { id: coupon.id, code: coupon.code },
-        "Successfully created coupon",
+      >(
+        COLLECTIONS.COUPONS,
+        payload as Omit<Record<string, unknown>, "id">,
       );
 
+      const coupon = await this.findById(created.id as string);
+      if (!coupon) throw new Error("Failed to retrieve created coupon");
+
+      logger.info({ id: coupon.id, code: coupon.code }, "Coupon created");
       return coupon;
     } catch (error) {
       logger.error({ error }, "Error creating coupon");
@@ -231,57 +184,60 @@ class CouponRepository {
     }
   }
 
-  /**
-   * Update an existing coupon.
-   */
-  async update(id: string, data: Partial<CouponFormData>): Promise<Coupon> {
+  async update(id: string, data: UpdateCouponData): Promise<Coupon> {
     try {
       logger.info({ id }, "Updating coupon");
+      const existing = await this.findById(id);
+      if (!existing) throw new Error("Coupon not found");
 
-      const existingCoupon = await this.findById(id);
-
-      if (!existingCoupon) {
-        logger.warn({ id }, "Cannot update coupon: coupon not found");
-        throw new Error("Coupon not found");
-      }
-
-      await firestoreService.updateDocument(COLLECTIONS.COUPONS, id, {
+      const payload: Record<string, unknown> = {
         ...data,
         updatedAt: FieldValue.serverTimestamp(),
-      });
+      };
 
-      const updatedCoupon = await this.findById(id);
-
-      if (!updatedCoupon) {
-        throw new Error("Failed to retrieve updated coupon");
+      // Normalise dates to Timestamps when provided
+      if ("startsAt" in data) {
+        payload.startsAt = this.toTimestamp(data.startsAt ?? null);
+      }
+      if ("expiresAt" in data) {
+        payload.expiresAt = this.toTimestamp(data.expiresAt ?? null);
+      }
+      if (data.code) {
+        payload.code = data.code.toUpperCase();
       }
 
-      logger.info({ id }, "Successfully updated coupon");
+      await firestoreService.updateDocument(COLLECTIONS.COUPONS, id, payload);
 
-      return updatedCoupon;
+      const updated = await this.findById(id);
+      if (!updated) throw new Error("Failed to retrieve updated coupon");
+
+      logger.info({ id }, "Coupon updated");
+      return updated;
     } catch (error) {
       logger.error({ id, error }, "Error updating coupon");
       throw error;
     }
   }
 
-  /**
-   * Delete an existing coupon.
-   */
+  async incrementUsage(id: string): Promise<void> {
+    try {
+      await firestoreService.updateDocument(COLLECTIONS.COUPONS, id, {
+        usageCount: FieldValue.increment(1),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      logger.error({ id, error }, "Error incrementing coupon usage");
+      throw error;
+    }
+  }
+
   async delete(id: string): Promise<void> {
     try {
       logger.info({ id }, "Deleting coupon");
-
-      const existingCoupon = await this.findById(id);
-
-      if (!existingCoupon) {
-        logger.warn({ id }, "Cannot delete coupon: coupon not found");
-        throw new Error("Coupon not found");
-      }
-
+      const existing = await this.findById(id);
+      if (!existing) throw new Error("Coupon not found");
       await firestoreService.deleteDocument(COLLECTIONS.COUPONS, id);
-
-      logger.info({ id }, "Successfully deleted coupon");
+      logger.info({ id }, "Coupon deleted");
     } catch (error) {
       logger.error({ id, error }, "Error deleting coupon");
       throw error;

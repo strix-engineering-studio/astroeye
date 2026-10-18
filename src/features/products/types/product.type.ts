@@ -2,8 +2,8 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  categoryId: string;
-  price: number;
+  categoryId?: string;
+  price: number;  
   stockQuantity: number;
   isPublished: boolean;
   imageUrl?: string;
@@ -14,7 +14,7 @@ export interface Product {
 export interface CreateProductInput {
   name: string;
   description?: string;
-  categoryId: string;
+  categoryId?: string;
   price: number;
   stockQuantity: number;
   isPublished?: boolean;

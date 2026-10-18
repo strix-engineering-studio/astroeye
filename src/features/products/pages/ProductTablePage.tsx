@@ -295,7 +295,7 @@ export const ProductTablePage: React.FC = () => {
                 >
                   <DropdownMenuItem >
                     <Link
-                      href={`/products/${encodeURIComponent(product.id)}`}
+                      href={`/console/products/${encodeURIComponent(product.id)}`}
                       className="flex cursor-pointer items-center gap-2 text-xs font-medium"
                     >
                       <Eye className="h-3.5 w-3.5" />
@@ -305,7 +305,7 @@ export const ProductTablePage: React.FC = () => {
 
                   <DropdownMenuItem >
                     <Link
-                      href={`/products/${encodeURIComponent(product.id)}/edit`}
+                      href={`/console/products/${encodeURIComponent(product.id)}/edit`}
                       className="flex cursor-pointer items-center gap-2 text-xs font-medium"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -393,7 +393,7 @@ export const ProductTablePage: React.FC = () => {
           </div>
 
           <Button  className="flex items-center gap-2">
-            <Link href="/products/create">
+            <Link href="/console/products/create">
               <PlusCircle className="h-4 w-4" />
               Add Product
             </Link>
@@ -437,7 +437,7 @@ export const ProductTablePage: React.FC = () => {
           loading={isLoading || isFetching}
           onRowClick={(product) => {
             router.push(
-              `/products/${encodeURIComponent(product.id)}`,
+              `/console/products/${encodeURIComponent(product.id)}`,
             );
           }}
           filterOptions={productFilterOptions}
@@ -445,7 +445,7 @@ export const ProductTablePage: React.FC = () => {
           filters={columnFilters}
           toolbar={
             <Button  className="flex items-center gap-2">
-              <Link href="/products/create">
+              <Link href="/console/products/create">
                 <PlusCircle className="h-4 w-4" />
                 Add Product
               </Link>

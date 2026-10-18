@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { getAdminSession } from "@/lib/admin-auth";
 import { productsRepository } from "@/features/products/repository/product.repository";
-import { createProductSchema } from "@/features/products/schemas/product.schema";
+import { productFormSchema } from "@/src/features/products";
+
 
 /**
  * GET /api/products
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const data = createProductSchema.parse(body);
+    const data = productFormSchema.parse(body);
 
     const createdProduct = await productsRepository.create(data);
 

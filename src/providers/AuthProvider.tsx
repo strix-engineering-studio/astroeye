@@ -4,6 +4,8 @@ import React, { createContext, useContext, useEffect, useCallback, useMemo } fro
 import { authService } from "@/features/auth/services/authService";
 import { useAuthStore } from "@/lib/store/authStore";
 import type { CustomerAuthUser } from "@/features/auth/types/auth.types";
+import { signOut } from "firebase/auth";
+import { clientAuth } from "@/lib/firebase/client";
 
 export interface CustomerAuthContextType {
   user: CustomerAuthUser | null;
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       await authService.logout();
+      if (clientAuth) await signOut(clientAuth);
       setUser(null);
     } finally {
       setLoading(false);

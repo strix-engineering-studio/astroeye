@@ -56,18 +56,18 @@ export async function POST(request: NextRequest) {
 
     if (existingCustomer) {
       // Existing customer: preserve profile, update lastLoginAt
-      await firestoreService.updateDocument(
-        COLLECTIONS.USERS,
-        (existingCustomer.id as string) || uid,
-        {
+      const profile = {
+          ...existingCustomer,
+          id: uid,
+          fullName: existingCustomer.fullName || displayName || "Customer",
+          email: existingCustomer.email || email || "",
+          phoneNumber: existingCustomer.phoneNumber || phoneNumber || "",
+          profileImageUrl: existingCustomer.profileImageUrl || photoURL || "",
           lastLoginAt: now.toISOString(),
           lastActiveAt: now.toISOString(),
           updatedAt: now,
-          ...(photoURL && !existingCustomer.profileImageUrl
-            ? { profileImageUrl: photoURL }
-            : {}),
-        },
-      );
+        };
+      await firestoreService.setDocument(COLLECTIONS.USERS, uid, profile);
       logger.info("Existing customer signed in with Google", { uid, email });
     } else {
       // First-time customer: create new customer profile
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         email: email || "",
         phoneNumber: phoneNumber || "",
         profileImageUrl: photoURL || "",
-        membershipType: MembershipType.free,
+       
         isActive: true,
         isExpert: false,
         isDeleted: false,

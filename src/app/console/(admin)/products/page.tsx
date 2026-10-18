@@ -3,6 +3,6 @@
 import { ProductTablePage } from "@/src/features/products/pages/ProductTablePage";
 
 
-export default function UsersRoute() {
+export default function Page() {
   return <ProductTablePage />;
 }

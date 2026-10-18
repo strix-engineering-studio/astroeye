@@ -1,206 +1,37 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
 import paymentServices from "../services/paymentServices";
-
-import type {
-  CreateResourceCheckoutInput,
-  VerifyResourcePaymentInput,
-  CreateWebinarPaymentOrderInput,
-  VerifyWebinarPaymentInput,
-} from "../types/razorpay.types";
-
+import type { CreatePaymentOrderInput, PaymentFilters, VerifyPaymentInput } from "../types/razorpay.types";
 import { COLLECTIONS } from "@/lib/constants/COLLECTIONS";
+import { QUERY_KEYS } from "../../customers/constants";
 
-/**
- * Safely extract an error message.
- */
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
+export const useCreatePaymentOrderMutation = () => useMutation({
+  mutationFn: (input: CreatePaymentOrderInput) => paymentServices.createPaymentOrder(input),
+  onError: (error: Error) => toast.error(error.message || "Unable to start payment."),
+});
 
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message;
-  }
-
-  return fallback;
-};
-
-/**
- * ============================================================
- * RESOURCE PAYMENT
- * ============================================================
- */
-
-/**
- * Create Razorpay order for a resource checkout.
- *
- * The frontend sends only the resource ID.
- *
- * The backend is responsible for:
- * - validating the resource
- * - checking premium status
- * - determining the price
- * - creating the Razorpay order
- */
-export const useCreateResourceCheckoutMutation = () => {
-  return useMutation({
-    mutationFn: (data: CreateResourceCheckoutInput) => {
-      return paymentServices.createResourceCheckout(data);
-    },
-
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Unable to start resource checkout"));
-    },
-  });
-};
-
-/**
- * Verify Razorpay payment for a resource.
- *
- * The backend must:
- * - validate the Razorpay order
- * - verify the Razorpay signature
- * - verify payment state
- * - grant resource access
- */
-export const useVerifyResourcePaymentMutation = () => {
+export const useVerifyPaymentMutation = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (data: VerifyResourcePaymentInput) => {
-      return paymentServices.verifyResourcePayment(data);
+    mutationFn: (input: VerifyPaymentInput) => paymentServices.verifyPayment(input),
+    onSuccess: async (result, input) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [COLLECTIONS.ORDERS, input.applicationOrderId] }),
+        queryClient.invalidateQueries({ queryKey: [COLLECTIONS.ORDERS] }),
+        queryClient.invalidateQueries({ queryKey: [COLLECTIONS.PAYMENTS] }),
+        queryClient.invalidateQueries({ queryKey: ["cart"] }),
+      ]);
+      if (result.success && result.status === "PAID") toast.success("Payment confirmed. Your order is placed.");
+      else toast.info(result.message || "Payment is being confirmed.");
     },
-
-    onSuccess: async (result) => {
-      if (!result.success) {
-        toast.error(result.message || "Resource payment verification failed");
-
-        return;
-      }
-
-      /*
-       * Refresh the resource so the UI reflects
-       * the latest access/purchase state.
-       */
-      await queryClient.invalidateQueries({
-        queryKey: [COLLECTIONS.RESOURCES, result.resourceId],
-      });
-
-      /*
-       * Refresh resource-related queries.
-       */
-      await queryClient.invalidateQueries({
-        queryKey: [COLLECTIONS.RESOURCES],
-      });
-
-      toast.success("Payment successful. Resource access granted.");
-    },
-
-    onError: (error: unknown) => {
-      toast.error(
-        getErrorMessage(error, "Resource payment verification failed"),
-      );
-    },
+    onError: (error: Error) => toast.error(error.message || "Unable to verify payment. Check your order status before retrying."),
   });
 };
 
-/**
- * ============================================================
- * WEBINAR PAYMENT
- * ============================================================
- */
-
-/**
- * Create Razorpay order for a paid webinar.
- *
- * The frontend sends only the webinar ID.
- *
- * The backend is responsible for:
- * - validating the webinar
- * - checking isPaid
- * - determining webinar.amount
- * - checking registration availability
- * - checking existing registration
- * - creating the Razorpay order
- */
-export const useCreateWebinarPaymentOrderMutation = () => {
-  return useMutation({
-    mutationFn: (data: CreateWebinarPaymentOrderInput) => {
-      return paymentServices.createWebinarPaymentOrder(data);
-    },
-
-    onError: (error: unknown) => {
-      toast.error(getErrorMessage(error, "Unable to start webinar checkout"));
-    },
-  });
-};
-
-/**
- * Verify Razorpay payment for a webinar.
- *
- * The backend must:
- * - validate the Razorpay order
- * - verify the Razorpay signature
- * - verify payment state
- * - create/update WebinarRegistration
- * - set paymentStatus = PAID
- * - set registrationStatus = REGISTERED
- */
-export const useVerifyWebinarPaymentMutation = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: VerifyWebinarPaymentInput) => {
-      return paymentServices.verifyWebinarPayment(data);
-    },
-
-    onSuccess: async (result) => {
-      if (!result.success) {
-        toast.error(result.message || "Webinar payment verification failed");
-
-        return;
-      }
-
-      /*
-       * Refresh the webinar itself.
-       *
-       * This is important because registeredCount
-       * may have changed.
-       */
-      await queryClient.invalidateQueries({
-        queryKey: [COLLECTIONS.WEBINARS, result.webinarId],
-      });
-
-      /*
-       * Refresh webinar lists/details.
-       */
-      await queryClient.invalidateQueries({
-        queryKey: [COLLECTIONS.WEBINARS],
-      });
-
-      /*
-       * If you have a registrations query,
-       * invalidate it here.
-       */
-      await queryClient.invalidateQueries({
-        queryKey: [COLLECTIONS.WEBINAR_REGISTRATIONS, result.webinarId],
-      });
-
-      toast.success("Payment successful. Webinar registration confirmed.");
-    },
-
-    onError: (error: unknown) => {
-      toast.error(
-        getErrorMessage(error, "Webinar payment verification failed"),
-      );
-    },
+export const usePaymentsQuery = (filters: PaymentFilters) => {
+  return useQuery({
+    queryKey: ["payments", 'list', filters],
+    queryFn: () => paymentServices.getPayments(filters),
+    staleTime: 30 * 1000,
   });
 };

@@ -8,6 +8,10 @@ import type { Order, OrderFilters } from "@/features/orders/types/orders.types";
 
 import { verifySession } from "@/lib/auth/session";
 import { OrderStatus } from "@/features/orders";
+import { adminDb } from "@/lib/firebase/admin";
+import { COLLECTIONS } from "@/lib/constants/COLLECTIONS";
+import { FieldValue } from "firebase-admin/firestore";
+import crypto from "crypto";
 
 /**
  * GET /api/orders
@@ -233,7 +237,6 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin/session
     const session = await verifySession();
 
     if (!session) {
@@ -247,8 +250,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate request body
-    const input = createOrderSchema.parse(await request.json());
+    const body: unknown = await request.json();
+    if (body && typeof body === "object" && "items" in body) {
+      const input = body as { items?: unknown; shippingAddress?: unknown; customerName?: unknown; customerEmail?: unknown; customerPhone?: unknown };
+      if (!Array.isArray(input.items) || input.items.length === 0 || input.items.length > 50) return NextResponse.json({ error: "Your cart is empty or invalid." }, { status: 400 });
+      const quantities = new Map<string, number>();
+      for (const item of input.items) {
+        if (!item || typeof item !== "object") return NextResponse.json({ error: "Invalid cart item." }, { status: 400 });
+        const value = item as { productId?: unknown; quantity?: unknown };
+        if (typeof value.productId !== "string" || !Number.isSafeInteger(value.quantity) || Number(value.quantity) < 1 || Number(value.quantity) > 99) return NextResponse.json({ error: "Cart quantities must be positive whole numbers." }, { status: 400 });
+        quantities.set(value.productId, (quantities.get(value.productId) ?? 0) + Number(value.quantity));
+      }
+      if ([...quantities.values()].some((quantity) => quantity > 99)) return NextResponse.json({ error: "A product quantity exceeds the limit." }, { status: 400 });
+      const requestKey = request.headers.get("idempotency-key")?.trim();
+      if (!requestKey || requestKey.length > 200) return NextResponse.json({ error: "Idempotency-Key is required." }, { status: 400 });
+      const idemId = crypto.createHash("sha256").update(`${session}:${requestKey}`).digest("hex");
+      const idemRef = adminDb.collection("checkout_idempotency").doc(idemId);
+      const saved = await idemRef.get();
+      if (saved.exists && saved.data()?.orderId) {
+        const existingOrder = await adminDb.collection(COLLECTIONS.ORDERS).doc(String(saved.data()?.orderId)).get();
+        if (existingOrder.exists) return NextResponse.json({ order: { id: existingOrder.id, ...existingOrder.data() } });
+      }
+      const productDocs = await Promise.all([...quantities.keys()].map((id) => adminDb.collection(COLLECTIONS.PRODUCTS).doc(id).get()));
+      const items = productDocs.map((snapshot, index) => {
+        if (!snapshot.exists) throw new Error("One or more products are no longer available.");
+        const product = snapshot.data()!;
+        const quantity = quantities.get([...quantities.keys()][index])!;
+        const price = Number(product.price);
+        if (!product.isPublished || !Number.isFinite(price) || price < 0 || Number(product.stockQuantity ?? 0) < quantity) throw new Error(`${String(product.name ?? "A product")} is unavailable in the requested quantity.`);
+        const unitAmount = Math.round(price * 100);
+        return { productId: snapshot.id, name: String(product.name ?? "Product"), unitAmount, quantity, lineTotal: unitAmount * quantity };
+      });
+      const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+      const shippingAmount = 0;
+      const address = input.shippingAddress && typeof input.shippingAddress === "object" ? input.shippingAddress : null;
+      if (!address || typeof (address as { line1?: unknown }).line1 !== "string" || typeof (address as { city?: unknown }).city !== "string" || typeof (address as { postalCode?: unknown }).postalCode !== "string") return NextResponse.json({ error: "Enter a complete shipping address." }, { status: 400 });
+      const orderRef = adminDb.collection(COLLECTIONS.ORDERS).doc();
+      const orderData = { id: orderRef.id, userId: session, items, title: items.map((item) => item.name).join(", ").slice(0, 200), amount: (subtotal + shippingAmount) / 100, subtotal: subtotal / 100, shippingAmount: shippingAmount / 100, currency: "INR", shippingAddress: address, customer: { name: input.customerName ?? "", email: input.customerEmail ?? "", phone: input.customerPhone ?? "" }, status: OrderStatus.pending, paymentStatus: "PENDING", createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() };
+      await adminDb.runTransaction(async (transaction) => {
+        const current = await transaction.get(idemRef);
+        if (current.exists && current.data()?.orderId) throw new Error("CHECKOUT_ALREADY_CREATED");
+        transaction.create(orderRef, orderData);
+        transaction.set(idemRef, { orderId: orderRef.id, userId: session, createdAt: FieldValue.serverTimestamp() });
+      });
+      return NextResponse.json({ order: { ...orderData, id: orderRef.id } }, { status: 201 });
+    }
+
+    const input = createOrderSchema.parse(body);
 
     // Create order
     const createdOrder = await ordersRepository.create(input);

@@ -20,6 +20,12 @@ export interface Order {
   updatedAt: Date | string;
   completedAt?: Date | string;
   refundedAt?: Date | string;
+  items?: Array<{ productId: string; name: string; sku?: string; unitAmount: number; quantity: number; lineTotal: number }>;
+  subtotal?: number;
+  shippingAmount?: number;
+  shippingAddress?: { line1: string; line2?: string; city: string; state?: string; postalCode: string };
+  customer?: { name?: string; email?: string; phone?: string };
+  paymentStatus?: "PENDING" | "PAID" | "FAILED" | "PROCESSING";
 }
 
 export interface OrderFilters extends Record<

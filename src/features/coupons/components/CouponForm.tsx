@@ -8,6 +8,8 @@ import {
   ShoppingCart,
   CalendarClock,
   ShieldCheck,
+  Users,
+  TrendingDown,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -29,9 +31,11 @@ import {
 } from "@/components/ui/card";
 import { FormWrapper } from "@/components/wrappers/FormWrapper";
 import { Coupon } from "../types/coupon.type";
-import { CouponFormInput, couponFormSchema, CouponFormValues } from "../schemas";
-
-
+import {
+  CouponFormInput,
+  couponFormSchema,
+  CouponFormValues,
+} from "../schemas";
 
 interface CouponFormProps {
   mode: "create" | "edit";
@@ -43,16 +47,9 @@ interface CouponFormProps {
 
 function toDateInput(value?: Date | string | null): string {
   if (!value) return "";
-
-  const date = value instanceof Date ? value : new Date(value);
-
+  const date = value instanceof Date ? value : new Date(String(value));
   if (Number.isNaN(date.getTime())) return "";
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 export function CouponForm({
@@ -72,9 +69,12 @@ export function CouponForm({
       description: "",
       discountType: "percentage",
       discountValue: 10,
-      minimumOrderAmount: "",
-      isActive: true,
+      minOrderAmount: "",
+      maxDiscountAmount: "",
+      usageLimit: "",
+      startsAt: "",
       expiresAt: "",
+      isActive: true,
     },
   });
 
@@ -83,15 +83,38 @@ export function CouponForm({
 
   useEffect(() => {
     if (!defaultValues) return;
-
     form.reset({
       code: defaultValues.code ?? "",
       description: defaultValues.description ?? "",
       discountType: defaultValues.discountType ?? "percentage",
       discountValue: defaultValues.discountValue ?? 10,
-      minimumOrderAmount: defaultValues.minimumOrderAmount ?? "",
+      minOrderAmount:
+        defaultValues.minOrderAmount != null
+          ? String(defaultValues.minOrderAmount)
+          : "",
+      maxDiscountAmount:
+        defaultValues.maxDiscountAmount != null
+          ? String(defaultValues.maxDiscountAmount)
+          : "",
+      usageLimit:
+        defaultValues.usageLimit != null
+          ? String(defaultValues.usageLimit)
+          : "",
+      startsAt: toDateInput(
+        defaultValues.startsAt instanceof Date
+          ? defaultValues.startsAt
+          : defaultValues.startsAt
+            ? new Date(String(defaultValues.startsAt))
+            : null,
+      ),
+      expiresAt: toDateInput(
+        defaultValues.expiresAt instanceof Date
+          ? defaultValues.expiresAt
+          : defaultValues.expiresAt
+            ? new Date(String(defaultValues.expiresAt))
+            : null,
+      ),
       isActive: defaultValues.isActive ?? true,
-      expiresAt: toDateInput(defaultValues.expiresAt),
     });
   }, [defaultValues, form]);
 
@@ -121,7 +144,7 @@ export function CouponForm({
         onSubmit={handleSubmit}
       >
         <div className="space-y-6">
-          {/* Coupon information */}
+          {/* ── Coupon Information ── */}
           <Card className="overflow-hidden">
             <CardHeader className="border-b px-6 py-5">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -143,16 +166,16 @@ export function CouponForm({
                 >
                   <Input
                     id="code"
-                    placeholder="e.g. FESTIVE10"
+                    placeholder="e.g. WELCOME10"
                     maxLength={30}
                     autoCapitalize="characters"
                     {...form.register("code")}
-                    onChange={(event) => {
-                      form.setValue("code", event.target.value.toUpperCase(), {
+                    onChange={(e) =>
+                      form.setValue("code", e.target.value.toUpperCase(), {
                         shouldDirty: true,
                         shouldValidate: true,
-                      });
-                    }}
+                      })
+                    }
                   />
                 </FormField>
 
@@ -163,14 +186,11 @@ export function CouponForm({
                 >
                   <Select
                     value={discountType}
-                    onValueChange={(value) =>
+                    onValueChange={(v) =>
                       form.setValue(
                         "discountType",
-                        value as "percentage" | "fixed",
-                        {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        },
+                        v as "percentage" | "fixed",
+                        { shouldDirty: true, shouldValidate: true },
                       )
                     }
                   >
@@ -201,7 +221,7 @@ export function CouponForm({
             </CardContent>
           </Card>
 
-          {/* Discount configuration */}
+          {/* ── Discount Configuration ── */}
           <Card className="overflow-hidden">
             <CardHeader className="border-b px-6 py-5">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -209,12 +229,13 @@ export function CouponForm({
                 Discount Configuration
               </CardTitle>
               <CardDescription>
-                Set the discount amount and minimum order requirement.
+                Set the discount amount and order requirements.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-5 p-6">
               <div className="grid gap-5 md:grid-cols-2">
+                {/* Discount Value */}
                 <FormField
                   label={
                     discountType === "percentage"
@@ -248,43 +269,132 @@ export function CouponForm({
                   )}
                 </FormField>
 
+                {/* Min Order Amount */}
                 <FormField
                   label="Minimum Order Amount (₹)"
-                  htmlFor="minimumOrderAmount"
-                  error={form.formState.errors.minimumOrderAmount?.message}
+                  htmlFor="minOrderAmount"
+                  error={form.formState.errors.minOrderAmount?.message}
                 >
                   <Input
-                    id="minimumOrderAmount"
+                    id="minOrderAmount"
                     type="number"
                     min="0"
-                    step="0.01"
-                    placeholder="No minimum"
-                    {...form.register("minimumOrderAmount")}
+                    step="1"
+                    placeholder="0"
+                    {...form.register("minOrderAmount")}
                   />
                   <p className="text-muted-foreground text-xs">
-                    Leave empty if the coupon has no minimum order value.
+                    Leave 0 if the coupon has no minimum requirement.
                   </p>
                 </FormField>
+
+                {/* Max Discount Amount (percentage only) */}
+                {discountType === "percentage" && (
+                  <FormField
+                    label="Maximum Discount Amount (₹)"
+                    htmlFor="maxDiscountAmount"
+                    error={form.formState.errors.maxDiscountAmount?.message}
+                  >
+                    <div className="relative">
+                      <Input
+                        id="maxDiscountAmount"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        className="pr-8"
+                        placeholder="No cap"
+                        {...form.register("maxDiscountAmount")}
+                      />
+                      <span className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 text-sm">
+                        ₹
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      Cap the maximum discount for percentage-based coupons.
+                    </p>
+                  </FormField>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Validity and status */}
+          {/* ── Usage Limits ── */}
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b px-6 py-5">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="h-5 w-5" />
+                Usage Limits
+              </CardTitle>
+              <CardDescription>
+                Control how many times this coupon can be redeemed.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="p-6">
+              <div className="grid gap-5 md:grid-cols-2">
+                <FormField
+                  label="Total Usage Limit"
+                  htmlFor="usageLimit"
+                  error={form.formState.errors.usageLimit?.message}
+                >
+                  <Input
+                    id="usageLimit"
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="Unlimited"
+                    {...form.register("usageLimit")}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Leave empty for unlimited redemptions.
+                  </p>
+                </FormField>
+
+                {!isCreateMode && (
+                  <FormField label="Usage Count">
+                    <div className="flex h-10 items-center">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium">
+                        <TrendingDown className="text-muted-foreground h-4 w-4" />
+                        {defaultValues?.usageCount ?? 0} redemptions so far
+                      </span>
+                    </div>
+                  </FormField>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Validity & Availability ── */}
           <Card className="overflow-hidden">
             <CardHeader className="border-b px-6 py-5">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <CalendarClock className="h-5 w-5" />
-                Validity & Availability
+                Validity &amp; Availability
               </CardTitle>
               <CardDescription>
-                Control when the coupon expires and whether it can be used.
+                Control when the coupon is active and whether it can be used.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-5 p-6">
               <div className="grid gap-5 md:grid-cols-2">
                 <FormField
-                  label="Expiry Date"
+                  label="Starts At"
+                  htmlFor="startsAt"
+                  error={form.formState.errors.startsAt?.message}
+                >
+                  <Input
+                    id="startsAt"
+                    type="date"
+                    {...form.register("startsAt")}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Leave empty to activate immediately.
+                  </p>
+                </FormField>
+
+                <FormField
+                  label="Expires At"
                   htmlFor="expiresAt"
                   error={form.formState.errors.expiresAt?.message}
                 >
@@ -304,7 +414,7 @@ export function CouponForm({
                       className={
                         isActive
                           ? "inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-300"
-                          : "inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground"
+                          : "bg-muted text-muted-foreground inline-flex items-center rounded-full px-3 py-1 text-sm font-medium"
                       }
                     >
                       {isActive ? "Active" : "Inactive"}
@@ -328,7 +438,6 @@ export function CouponForm({
                     }
                     className="mt-0.5"
                   />
-
                   <span className="space-y-1">
                     <span className="flex items-center gap-2 text-sm font-medium">
                       <ShieldCheck className="h-4 w-4" />
@@ -349,6 +458,9 @@ export function CouponForm({
   );
 }
 
+// ---------------------------------------------------------------------------
+// FormField helper
+// ---------------------------------------------------------------------------
 interface FormFieldProps {
   label: string;
   htmlFor?: string;
@@ -374,9 +486,7 @@ function FormField({
           </span>
         )}
       </label>
-
       {children}
-
       {error && (
         <p role="alert" className="text-destructive text-sm">
           {error}

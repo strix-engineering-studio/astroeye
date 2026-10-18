@@ -1,691 +1,270 @@
+
 import { NextResponse } from "next/server";
-import crypto from "crypto";
-import type { DocumentReference } from "firebase-admin/firestore";
+
 import { adminDb } from "@/lib/firebase/admin";
 import { verifySession } from "@/lib/auth/session";
+import { COLLECTIONS } from "@/lib/constants/COLLECTIONS";
 
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+const keyId = process.env.RAZORPAY_KEY_ID;
+const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-const RAZORPAY_API_URL = "https://api.razorpay.com/v1/orders";
+type CreatePaymentResult = {
+  applicationOrderId: string;
+  paymentId: string;
+  razorpayOrderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+  name: string;
+  description: string;
+};
 
-/**
- * Extract a stable user identifier from the session.
- *
- * Your existing feed route passes `session` directly around,
- * so the exact session shape is project-specific.
- */
-function getSessionUserId(session: unknown): string | null {
-  if (typeof session === "string") {
-    return session;
-  }
-
-  if (typeof session === "object" && session !== null) {
-    const value = session as Record<string, unknown>;
-
-    if (typeof value.userId === "string") {
-      return value.userId;
-    }
-
-    if (typeof value.uid === "string") {
-      return value.uid;
-    }
-
-    if (typeof value.id === "string") {
-      return value.id;
-    }
-
-    if (typeof value.user === "object" && value.user !== null) {
-      const user = value.user as Record<string, unknown>;
-
-      if (typeof user.id === "string") {
-        return user.id;
-      }
-
-      if (typeof user.uid === "string") {
-        return user.uid;
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Convert an INR amount into paise.
- *
- * Example:
- * ₹499 -> 49900
- */
-function toRazorpayAmount(amount: number): number {
-  return Math.round(amount * 100);
-}
-
-function idempotencyRef(userId: string, key: string) {
-  const digest = crypto
-    .createHash("sha256")
-    .update(`${userId}:${key}`)
-    .digest("hex");
-  return adminDb.collection("payment_idempotency").doc(digest);
-}
-
-function isMatchingCheckout(
-  saved: Record<string, unknown> | undefined,
-  entityType: "RESOURCE" | "WEBINAR",
-  entityId: string,
-): boolean {
-  return (
-    saved?.entityType === entityType &&
-    saved[entityType === "RESOURCE" ? "resourceId" : "webinarId"] === entityId
-  );
-}
-
-/**
- * Create a Razorpay order.
- */
 export async function POST(request: Request) {
-  let activeIdempotencyRef: DocumentReference | null = null;
+  let paymentRef:
+    | FirebaseFirestore.DocumentReference
+    | undefined;
 
   try {
-    const session = await verifySession();
-
-    if (!session) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized",
-        },
-        {
-          status: 401,
-        },
-      );
-    }
-
-    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-      console.error("Razorpay environment variables are missing.");
-
-      return NextResponse.json(
-        {
-          error: "Payment service is not configured.",
-        },
-        {
-          status: 500,
-        },
-      );
-    }
-
-    const userId = getSessionUserId(session);
+    const userId = await verifySession();
 
     if (!userId) {
       return NextResponse.json(
-        {
-          error: "Unable to identify authenticated user.",
-        },
-        {
-          status: 401,
-        },
+        { error: "Unauthorized." },
+        { status: 401 },
       );
     }
 
-    let payload: Record<string, unknown>;
-    try {
-      const body: unknown = await request.json();
-      if (!body || typeof body !== "object" || Array.isArray(body)) {
-        return NextResponse.json(
-          { error: "Invalid request body." },
-          { status: 400 },
-        );
-      }
-      payload = body as Record<string, unknown>;
-    } catch {
+    if (!keyId || !keySecret) {
       return NextResponse.json(
-        { error: "Invalid request body." },
+        { error: "Payment service is not configured." },
+        { status: 500 },
+      );
+    }
+
+    const body: unknown = await request.json();
+
+    if (
+      !body ||
+      typeof body !== "object" ||
+      !("orderId" in body) ||
+      typeof body.orderId !== "string" ||
+      !body.orderId.trim()
+    ) {
+      return NextResponse.json(
+        { error: "A valid orderId is required." },
         { status: 400 },
       );
     }
 
-    const resourceId =
-      typeof payload.resourceId === "string"
-        ? payload.resourceId.trim()
-        : undefined;
+    const applicationOrderId = body.orderId.trim();
+    const orderRef = adminDb
+      .collection(COLLECTIONS.ORDERS)
+      .doc(applicationOrderId);
 
-    const webinarId =
-      typeof payload.webinarId === "string"
-        ? payload.webinarId.trim()
-        : undefined;
+    // 1. Validate the already-created application order.
+    const orderSnap = await orderRef.get();
 
-    /*
-     * Exactly one purchasable entity is required.
-     */
-    if ((!resourceId && !webinarId) || (resourceId && webinarId)) {
+    if (!orderSnap.exists) {
       return NextResponse.json(
-        {
-          error: "Provide exactly one of resourceId or webinarId.",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-    const idempotencyKey = request.headers.get("idempotency-key")?.trim();
-    if (!idempotencyKey || idempotencyKey.length > 200) {
-      return NextResponse.json(
-        { error: "Idempotency-Key header is required." },
-        { status: 400 },
+        { error: "Order not found." },
+        { status: 404 },
       );
     }
 
-    /*
-     * ==========================================================
-     * RESOURCE
-     * ==========================================================
-     */
+    const order = orderSnap.data()!;
 
-    if (resourceId) {
-      const resourceRef = adminDb.collection("resources").doc(resourceId);
-
-      const resourceSnapshot = await resourceRef.get();
-
-      if (!resourceSnapshot.exists) {
-        return NextResponse.json(
-          {
-            error: "Resource not found.",
-          },
-          {
-            status: 404,
-          },
-        );
-      }
-
-      const resource = resourceSnapshot.data();
-
-      if (!resource) {
-        return NextResponse.json(
-          {
-            error: "Resource not found.",
-          },
-          {
-            status: 404,
-          },
-        );
-      }
-
-      if (!resource.isPremium) {
-        return NextResponse.json(
-          {
-            error: "This resource does not require payment.",
-          },
-          {
-            status: 400,
-          },
-        );
-      }
-
-      /*
-       * IMPORTANT:
-       *
-       * The price must come from Firestore.
-       * Never trust a price supplied by the browser.
-       */
-      const price = Number(resource.price ?? 0);
-
-      if (!Number.isFinite(price) || price <= 0) {
-        return NextResponse.json(
-          {
-            error: "Resource price is not configured.",
-          },
-          {
-            status: 400,
-          },
-        );
-      }
-
-      /*
-       * Check whether the user already purchased
-       * this resource.
-       *
-       * Change `resource_purchases` if your actual
-       * Firestore collection uses another name.
-       */
-      const existingPurchase = await adminDb
-        .collection("resource_purchases")
-        .where("resourceId", "==", resourceId)
-        .where("userId", "==", userId)
-        .where("status", "in", ["PAID", "CAPTURED", "COMPLETED"])
-        .limit(1)
-        .get();
-
-      if (!existingPurchase.empty) {
-        return NextResponse.json(
-          {
-            error: "You have already purchased this resource.",
-          },
-          {
-            status: 409,
-          },
-        );
-      }
-
-      const amount = toRazorpayAmount(price);
-      if (!Number.isSafeInteger(amount) || amount <= 0) {
-        return NextResponse.json(
-          { error: "Resource price is invalid." },
-          { status: 400 },
-        );
-      }
-      const idemRef = idempotencyRef(userId, idempotencyKey);
-      activeIdempotencyRef = idemRef;
-      const existingIdem = await idemRef.get();
-      if (existingIdem.exists) {
-        const saved = existingIdem.data();
-        if (!isMatchingCheckout(saved, "RESOURCE", resourceId)) {
-          return NextResponse.json(
-            {
-              error:
-                "This idempotency key was already used for another checkout.",
-            },
-            { status: 409 },
-          );
-        }
-        if (saved?.status === "COMPLETED" && saved.response)
-          return NextResponse.json(saved.response);
-        if (saved?.status !== "FAILED") {
-          return NextResponse.json(
-            { error: "A checkout with this idempotency key is in progress." },
-            { status: 409 },
-          );
-        }
-        await idemRef.delete();
-      }
-      try {
-        await idemRef.create({
-          status: "PROCESSING",
-          entityType: "RESOURCE",
-          resourceId,
-          createdAt: new Date().toISOString(),
-        });
-      } catch {
-        return NextResponse.json(
-          { error: "A checkout with this idempotency key is in progress." },
-          { status: 409 },
-        );
-      }
-
-      /*
-       * Create Razorpay order.
-       */
-      const razorpayResponse = await fetch(RAZORPAY_API_URL, {
-        method: "POST",
-
-        headers: {
-          Authorization: `Basic ${Buffer.from(
-            `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`,
-          ).toString("base64")}`,
-
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          amount,
-          currency: "INR",
-
-          receipt: `resource_${resourceId}_${Date.now()}`,
-
-          notes: {
-            entityType: "RESOURCE",
-            resourceId,
-            userId,
-          },
-
-          payment_capture: 1,
-        }),
-      });
-
-      if (!razorpayResponse.ok) {
-        const razorpayError = await razorpayResponse.json().catch(() => null);
-
-        console.error("Razorpay order creation failed:", razorpayError);
-        await idemRef.update({
-          status: "FAILED",
-          updatedAt: new Date().toISOString(),
-        });
-
-        return NextResponse.json(
-          {
-            error: "Failed to create payment order.",
-          },
-          {
-            status: 502,
-          },
-        );
-      }
-
-      const razorpayOrder = await razorpayResponse.json();
-      if (
-        typeof razorpayOrder?.id !== "string" ||
-        razorpayOrder.amount !== amount ||
-        razorpayOrder.currency !== "INR"
-      ) {
-        await idemRef.update({
-          status: "FAILED",
-          updatedAt: new Date().toISOString(),
-        });
-        return NextResponse.json(
-          { error: "Invalid payment order response." },
-          { status: 502 },
-        );
-      }
-
-      /*
-       * Store the order before returning it
-       * to the browser.
-       *
-       * This server-side record becomes the source
-       * of truth during signature verification.
-       */
-      const response = {
-        orderId: razorpayOrder.id,
-        amount,
-        currency: "INR",
-        resourceId,
-        keyId: RAZORPAY_KEY_ID,
-        name: "MagicalStones",
-        description: resource.title ?? "MagicalStones Resource",
-      };
-      await adminDb.collection("resource_payments").doc(razorpayOrder.id).set({
-        id: razorpayOrder.id,
-
-        entityType: "RESOURCE",
-
-        resourceId,
-        userId,
-
-        razorpayOrderId: razorpayOrder.id,
-
-        amount,
-
-        currency: "INR",
-
-        status: "CREATED",
-
-        createdAt: new Date().toISOString(),
-
-        updatedAt: new Date().toISOString(),
-      });
-      await idemRef.update({ status: "COMPLETED", response });
-      return NextResponse.json(response);
-    }
-
-    /*
-     * ==========================================================
-     * WEBINAR
-     * ==========================================================
-     */
-
-    const webinarRef = adminDb.collection("webinars").doc(webinarId!);
-
-    const webinarSnapshot = await webinarRef.get();
-
-    if (!webinarSnapshot.exists) {
+    if (order.userId !== userId) {
       return NextResponse.json(
-        {
-          error: "Webinar not found.",
-        },
-        {
-          status: 404,
-        },
-      );
-    }
-
-    const webinar = webinarSnapshot.data();
-
-    if (!webinar) {
-      return NextResponse.json(
-        {
-          error: "Webinar not found.",
-        },
-        {
-          status: 404,
-        },
+        { error: "Forbidden." },
+        { status: 403 },
       );
     }
 
     if (
-      webinar.isActive === false ||
-      webinar.status === "CANCELLED" ||
-      webinar.status === "COMPLETED"
+      order.paymentStatus === "PAID" ||
+      order.status === "completed"
     ) {
       return NextResponse.json(
-        { error: "This webinar is not available for registration." },
-        { status: 400 },
-      );
-    }
-
-    if (!webinar.isPaid) {
-      return NextResponse.json(
-        {
-          error: "This webinar does not require payment.",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const price = Number(webinar.amount ?? 0);
-
-    if (!Number.isFinite(price) || price <= 0) {
-      return NextResponse.json(
-        {
-          error: "Webinar payment amount is not configured.",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    /*
-     * Check existing registration.
-     */
-    const existingRegistration = await adminDb
-      .collection("webinar_registrations")
-      .where("webinarId", "==", webinarId)
-      .where("userId", "==", userId)
-      .limit(1)
-      .get();
-
-    if (!existingRegistration.empty) {
-      const registration = existingRegistration.docs[0].data();
-
-      if (registration.registrationStatus === "REGISTERED") {
-        return NextResponse.json(
-          {
-            error: "You are already registered for this webinar.",
-          },
-          {
-            status: 409,
-          },
-        );
-      }
-    }
-
-    /*
-     * Check participant limit.
-     */
-    if (
-      webinar.maxParticipants &&
-      Number(webinar.registeredCount ?? 0) >= Number(webinar.maxParticipants)
-    ) {
-      return NextResponse.json(
-        {
-          error: "This webinar has reached its participant limit.",
-        },
-        {
-          status: 409,
-        },
-      );
-    }
-
-    const amount = toRazorpayAmount(price);
-    if (!Number.isSafeInteger(amount) || amount <= 0) {
-      return NextResponse.json(
-        { error: "Webinar payment amount is invalid." },
-        { status: 400 },
-      );
-    }
-    const idemRef = idempotencyRef(userId, idempotencyKey);
-    activeIdempotencyRef = idemRef;
-    const existingIdem = await idemRef.get();
-    if (existingIdem.exists) {
-      const saved = existingIdem.data();
-      if (!isMatchingCheckout(saved, "WEBINAR", webinarId!)) {
-        return NextResponse.json(
-          {
-            error:
-              "This idempotency key was already used for another checkout.",
-          },
-          { status: 409 },
-        );
-      }
-      if (saved?.status === "COMPLETED" && saved.response)
-        return NextResponse.json(saved.response);
-      if (saved?.status !== "FAILED") {
-        return NextResponse.json(
-          { error: "A checkout with this idempotency key is in progress." },
-          { status: 409 },
-        );
-      }
-      await idemRef.delete();
-    }
-    try {
-      await idemRef.create({
-        status: "PROCESSING",
-        entityType: "WEBINAR",
-        webinarId,
-        createdAt: new Date().toISOString(),
-      });
-    } catch {
-      return NextResponse.json(
-        { error: "A checkout with this idempotency key is in progress." },
+        { error: "Order is already paid." },
         { status: 409 },
       );
     }
 
-    /*
-     * Create Razorpay order.
-     */
-    const razorpayResponse = await fetch(RAZORPAY_API_URL, {
-      method: "POST",
-
-      headers: {
-        Authorization: `Basic ${Buffer.from(
-          `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`,
-        ).toString("base64")}`,
-
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({
-        amount,
-        currency: "INR",
-
-        receipt: `webinar_${webinarId}_${Date.now()}`,
-
-        notes: {
-          entityType: "WEBINAR",
-          webinarId,
-          userId,
-        },
-
-        payment_capture: 1,
-      }),
-    });
-
-    if (!razorpayResponse.ok) {
-      const razorpayError = await razorpayResponse.json().catch(() => null);
-
-      console.error("Razorpay webinar order creation failed:", razorpayError);
-      await idemRef.update({
-        status: "FAILED",
-        updatedAt: new Date().toISOString(),
-      });
-
-      return NextResponse.json(
-        {
-          error: "Failed to create payment order.",
-        },
-        {
-          status: 502,
-        },
-      );
-    }
-
-    const razorpayOrder = await razorpayResponse.json();
     if (
-      typeof razorpayOrder?.id !== "string" ||
-      razorpayOrder.amount !== amount ||
-      razorpayOrder.currency !== "INR"
+      order.status === "cancelled" ||
+      order.status === "refunded"
     ) {
-      await idemRef.update({
-        status: "FAILED",
-        updatedAt: new Date().toISOString(),
-      });
       return NextResponse.json(
-        { error: "Invalid payment order response." },
-        { status: 502 },
+        { error: "This order cannot be paid." },
+        { status: 409 },
       );
     }
 
-    /*
-     * Store server-side payment record.
-     */
-    const response = {
-      orderId: razorpayOrder.id,
-      amount,
-      currency: "INR",
-      webinarId,
-      keyId: RAZORPAY_KEY_ID,
-      name: "MagicalStones",
-      description: webinar.title ?? "MagicalStones Webinar",
-    };
-    await adminDb.collection("webinar_payments").doc(razorpayOrder.id).set({
-      id: razorpayOrder.id,
+    const amount = Math.round(Number(order.amount) * 100);
+    const currency =
+      typeof order.currency === "string"
+        ? order.currency
+        : "INR";
 
-      entityType: "WEBINAR",
+    if (!Number.isSafeInteger(amount) || amount <= 0) {
+      return NextResponse.json(
+        { error: "Order total is invalid." },
+        { status: 400 },
+      );
+    }
 
-      webinarId,
+    // 2. Reuse an existing pending payment if its Razorpay
+    // order has already been created.
+    const existingPayments = await adminDb
+      .collection(COLLECTIONS.PAYMENTS)
+      .where("orderId", "==", applicationOrderId)
+      .where("userId", "==", userId)
+      .where("status", "==", "PENDING")
+      .limit(10)
+      .get();
+
+    const existingPayment = existingPayments.docs.find(
+      (doc) =>
+        typeof doc.data().razorpayOrderId === "string" &&
+        doc.data().razorpayOrderId.length > 0,
+    );
+
+    if (existingPayment) {
+      const payment = existingPayment.data();
+
+      // Do not reuse a payment attempt whose amount no longer
+      // matches the saved order total.
+      if (payment.amount !== amount ||
+          payment.currency !== currency) {
+        return NextResponse.json(
+          { error: "Payment amount does not match the order." },
+          { status: 409 },
+        );
+      }
+
+      return NextResponse.json({
+        applicationOrderId,
+        paymentId: existingPayment.id,
+        razorpayOrderId: payment.razorpayOrderId,
+        amount: payment.amount,
+        currency: payment.currency,
+        keyId,
+        name: "Astroeye",
+        description: `Order ${applicationOrderId}`,
+      } satisfies CreatePaymentResult);
+    }
+
+    // 3. Create the payment document FIRST.
+    // This record is linked to the application order even if
+    // the subsequent Razorpay API request fails.
+    paymentRef = adminDb
+      .collection(COLLECTIONS.PAYMENTS)
+      .doc();
+
+    await paymentRef.create({
+      id: paymentRef.id,
+      orderId: applicationOrderId,
       userId,
-
-      razorpayOrderId: razorpayOrder.id,
-
       amount,
-
-      currency: "INR",
-
-      status: "CREATED",
-
-      createdAt: new Date().toISOString(),
-
-      updatedAt: new Date().toISOString(),
+      currency,
+      status: "PENDING",
+      razorpayOrderId: null,
+      razorpayPaymentId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    await idemRef.update({ status: "COMPLETED", response });
-    return NextResponse.json(response);
+    // 4. Create the Razorpay order using the saved order total.
+    const razorpayResponse = await fetch(
+      "https://api.razorpay.com/v1/orders",
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            `Basic ${Buffer.from(
+              `${keyId}:${keySecret}`,
+            ).toString("base64")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount,
+          currency,
+          receipt: applicationOrderId.slice(0, 40),
+          notes: {
+            applicationOrderId,
+            paymentId: paymentRef.id,
+            userId,
+          },
+        }),
+        cache: "no-store",
+      },
+    );
+
+    const razorpayOrder: unknown =
+      await razorpayResponse.json();
+
+    if (
+      !razorpayResponse.ok ||
+      !razorpayOrder ||
+      typeof razorpayOrder !== "object" ||
+      !("id" in razorpayOrder) ||
+      typeof razorpayOrder.id !== "string" ||
+      !("amount" in razorpayOrder) ||
+      razorpayOrder.amount !== amount ||
+      !("currency" in razorpayOrder) ||
+      razorpayOrder.currency !== currency
+    ) {
+      throw new Error("Razorpay order creation failed.");
+    }
+
+    const razorpayOrderId = razorpayOrder.id;
+
+    // 5. Link the Razorpay order to the payment record.
+    await paymentRef.update({
+      razorpayOrderId,
+      updatedAt: new Date(),
+    });
+
+    // Keep the application order's payment status unpaid/pending.
+    await orderRef.update({
+      paymentId: paymentRef.id,
+      paymentStatus: "PENDING",
+      updatedAt: new Date(),
+    });
+
+    return NextResponse.json({
+      applicationOrderId,
+      paymentId: paymentRef.id,
+      razorpayOrderId,
+      amount,
+      currency,
+      keyId,
+      name: "Astroeye",
+      description: `Order ${applicationOrderId}`,
+    } satisfies CreatePaymentResult);
   } catch (error) {
     console.error("Create payment order error:", error);
-    if (activeIdempotencyRef) {
-      await activeIdempotencyRef
-        .update({ status: "FAILED", updatedAt: new Date().toISOString() })
-        .catch(() => undefined);
+
+    // If the payment record was created but Razorpay order
+    // creation failed, retain the record for auditing.
+    if (paymentRef) {
+      try {
+        await paymentRef.update({
+          status: "FAILED",
+          failureReason: "PAYMENT_ORDER_CREATION_FAILED",
+          updatedAt: new Date(),
+        });
+      } catch (updateError) {
+        console.error(
+          "Failed to update payment status:",
+          updateError,
+        );
+      }
     }
 
     return NextResponse.json(
-      {
-        error: "Unable to create payment order.",
-      },
-      {
-        status: 500,
-      },
+      { error: "Unable to create payment order." },
+      { status: 502 },
     );
   }
 }

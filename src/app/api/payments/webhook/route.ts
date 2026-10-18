@@ -211,6 +211,26 @@ export async function POST(request: Request) {
           received: true,
         });
       }
+      const checkoutPaymentRef = adminDb.collection("payments").doc(orderId);
+      const checkoutPaymentSnap = await checkoutPaymentRef.get();
+      if (checkoutPaymentSnap.exists) {
+        const checkoutPayment = checkoutPaymentSnap.data()!;
+        const checkoutNotes = (payment.notes ?? {}) as Record<string, unknown>;
+        if (payment.status !== "captured" || payment.amount !== checkoutPayment.amount || payment.currency !== checkoutPayment.currency || checkoutNotes.applicationOrderId !== checkoutPayment.orderId || checkoutNotes.userId !== checkoutPayment.userId) {
+          await eventRef.update({ status: "REJECTED", processedAt: Timestamp.now(), reason: "Order payment validation failed." });
+          return NextResponse.json({ received: true, processed: false }, { status: 400 });
+        }
+        const orderRef = adminDb.collection("orders").doc(checkoutPayment.orderId);
+        await adminDb.runTransaction(async (transaction) => {
+          const [currentPayment, currentOrder] = await Promise.all([transaction.get(checkoutPaymentRef), transaction.get(orderRef)]);
+          if (!currentPayment.exists || !currentOrder.exists || currentPayment.data()?.status === "CAPTURED") return;
+          const now = Timestamp.now();
+          transaction.update(checkoutPaymentRef, { status: "CAPTURED", razorpayPaymentId: paymentId, capturedAt: now, updatedAt: now });
+          transaction.update(orderRef, { status: "completed", paymentStatus: "PAID", paymentId, paymentMethod: "razorpay", completedAt: now, updatedAt: now });
+        });
+        await eventRef.update({ status: "COMPLETED", processedAt: Timestamp.now() });
+        return NextResponse.json({ received: true, processed: true, type: "ORDER" });
+      }
       const paymentStatus = payment.status;
       if (paymentStatus !== "captured") {
         await eventRef.update({
@@ -545,6 +565,16 @@ export async function POST(request: Request) {
         typeof payment?.order_id === "string" ? payment.order_id : null;
 
       if (orderId) {
+        const checkoutPaymentRef = adminDb.collection("payments").doc(orderId);
+        const checkoutPaymentSnap = await checkoutPaymentRef.get();
+        if (checkoutPaymentSnap.exists) {
+          const checkoutPayment = checkoutPaymentSnap.data()!;
+          if (checkoutPayment.status !== "CAPTURED") {
+            const now = Timestamp.now();
+            await checkoutPaymentRef.update({ status: "FAILED", razorpayPaymentId: paymentId, failureReason: typeof payment?.error_description === "string" ? payment.error_description : null, updatedAt: now });
+            await adminDb.collection("orders").doc(checkoutPayment.orderId).update({ paymentStatus: "FAILED", status: "failed", updatedAt: now });
+          }
+        }
         const resourcePaymentRef = adminDb
           .collection("resource_payments")
           .doc(orderId);

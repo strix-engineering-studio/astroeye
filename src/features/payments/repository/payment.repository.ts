@@ -18,7 +18,7 @@ export class PaymentRepository {
   private paymentsCollection: DocumentReference;
 
   constructor() {
-    this.paymentsCollection = collection(db, 'payments');
+    this.paymentsCollection = collection(db, 't_payments');
   }
 
   async createPayment(data: any): Promise<DocumentReference> {

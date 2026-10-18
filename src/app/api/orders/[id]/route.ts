@@ -16,6 +16,8 @@ interface RouteContext {
 export async function GET(_request: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
+    const userId = await verifySession();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     if (!id) {
       return NextResponse.json(
@@ -40,6 +42,8 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
         },
       );
     }
+
+    if (order.userId !== userId) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
     return NextResponse.json(order, {
       status: 200,

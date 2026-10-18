@@ -123,13 +123,14 @@ export default function VerifyOtp() {
     try {
       verifierRef.current?.clear();
 
-      const verifier = new RecaptchaVerifier(auth, recaptchaRef.current, {
+      if (!clientAuth) throw new Error("Firebase authentication is not configured.");
+      const verifier = new RecaptchaVerifier(clientAuth, recaptchaRef.current, {
         size: "invisible",
       });
 
       verifierRef.current = verifier;
 
-      const result = await signInWithPhoneNumber(clientAuth!, phoneNumber, verifier);
+      const result = await signInWithPhoneNumber(clientAuth, phoneNumber, verifier);
 
       setPendingVerification(phoneNumber, result);
       setOtp("");

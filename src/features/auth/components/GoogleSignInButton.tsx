@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 import { Button } from "@/components/ui/button";
+import { clientAuth } from "@/lib/firebase/client";
 import { useGoogleLogin } from "../hooks/useAuth";
 import { AuthError } from "./AuthError";
 import { PersonStanding } from "lucide-react";
@@ -31,13 +32,14 @@ export function GoogleSignInButton({
     setIsSigningIn(true);
 
     try {
+      if (!clientAuth) throw new Error("Firebase authentication is not configured.");
       const provider = new GoogleAuthProvider();
 
       provider.setCustomParameters({
         prompt: "select_account",
       });
 
-      const credential = await signInWithPopup(auth, provider);
+      const credential = await signInWithPopup(clientAuth, provider);
       const idToken = await credential.user.getIdToken();
 
       // The backend verifies the token and sets the session cookie.

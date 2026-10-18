@@ -8,7 +8,7 @@ import {
 } from "firebase/auth";
 import { ArrowRight, Phone } from "lucide-react";
 
-import { auth } from "@/lib/firebase/client";
+import { clientAuth } from "@/lib/firebase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,10 +31,14 @@ export function PhoneNumberForm({ onCodeSent }: PhoneNumberFormProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!clientAuth) {
+      setError("Firebase authentication is not configured.");
+      return;
+    }
     if (!recaptchaContainerRef.current) return;
 
     const verifier = new RecaptchaVerifier(
-      auth,
+      clientAuth,
       recaptchaContainerRef.current,
       {
         size: "invisible",
@@ -94,7 +98,7 @@ export function PhoneNumberForm({ onCodeSent }: PhoneNumberFormProps) {
 
     try {
       const confirmationResult = await signInWithPhoneNumber(
-        auth,
+        clientAuth!,
         normalizedPhone,
         verifier,
       );

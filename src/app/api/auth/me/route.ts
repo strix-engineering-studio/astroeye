@@ -37,6 +37,7 @@ export async function GET() {
         profileImageUrl: customer.profileImageUrl || customer.photoURL,
         membershipType: customer.membershipType || "FREE",
         isActive: customer.isActive ?? true,
+        preferences: customer.preferences ?? {},
         createdAt: customer.createdAt,
       });
     }

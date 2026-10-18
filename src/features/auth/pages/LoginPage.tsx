@@ -38,8 +38,9 @@ export default function Login() {
     setIsGoogleLoading(true);
 
     try {
+      if (!clientAuth) throw new Error("Firebase authentication is not configured.");
       const result = await signInWithPopup(
-        clientAuth!,
+        clientAuth,
         new GoogleAuthProvider(),
       );
 
@@ -82,6 +83,7 @@ export default function Login() {
     setIsSendingOtp(true);
 
     try {
+      if (!clientAuth) throw new Error("Firebase authentication is not configured.");
       if (!recaptchaRef.current) {
         throw new Error(
           "Phone verification is not ready. Refresh and try again.",
@@ -91,7 +93,7 @@ export default function Login() {
       verifierRef.current?.clear();
 
       const verifier = new RecaptchaVerifier(
-        clientAuth!,
+        clientAuth,
         recaptchaRef.current,
         {
           size: "invisible",
@@ -101,7 +103,7 @@ export default function Login() {
       verifierRef.current = verifier;
 
       const confirmationResult = await signInWithPhoneNumber(
-        clientAuth!,
+        clientAuth,
         normalizedPhone,
         verifier,
       );
